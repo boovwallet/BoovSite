@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Hadi Abdul research portfolio">
+  <rect width="1200" height="630" fill="#0B1B2B"/>
+  <rect x="1138" y="0" width="6" height="630" fill="#14B8A6"/>
+  <text x="88" y="132" fill="#14B8A6" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="24" font-weight="700" letter-spacing="4">RESEARCH PORTFOLIO · 2025-2026</text>
+  <text x="88" y="276" fill="#FFFFFF" font-family="Georgia, serif" font-size="96" font-weight="600">Hadi Abdul</text>
+  <text x="92" y="354" fill="#B8C4D0" font-family="Georgia, serif" font-size="38" font-style="italic">Biomedical engineering · digital health · global health systems</text>
+  <path d="M88 488h128l42-86 64 168 64-126 44 44h144c38 0 58-44 88-44 34 0 50 44 86 44h116" fill="none" stroke="#14B8A6" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
