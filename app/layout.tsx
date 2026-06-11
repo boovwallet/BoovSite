@@ -22,18 +22,17 @@ const jetBrains = JetBrains_Mono({
   display: "optional",
 });
 
-const description =
-  "Building open-source tools at the intersection of biomedical engineering, digital health, and global health systems.";
+const description = "Hadi Abdul, Harvard University student based in Durham, North Carolina.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://mentorship-site.vercel.app"),
-  title: "Hadi Abdul — Research Portfolio",
+  title: "Hadi Abdul",
   description,
   icons: {
     icon: "/icon.svg",
   },
   openGraph: {
-    title: "Hadi Abdul — Research Portfolio",
+    title: "Hadi Abdul",
     description,
     type: "website",
     url: "https://mentorship-site.vercel.app",
@@ -42,13 +41,13 @@ export const metadata: Metadata = {
         url: "/og-card.svg",
         width: 1200,
         height: 630,
-        alt: "Hadi Abdul research portfolio card with teal pulse mark.",
+        alt: "Hadi Abdul.",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Hadi Abdul — Research Portfolio",
+    title: "Hadi Abdul",
     description,
     images: ["/og-card.svg"],
   },

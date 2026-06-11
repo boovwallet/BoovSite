@@ -1,8 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Hadi Abdul research portfolio">
-  <rect width="1200" height="630" fill="#0B1B2B"/>
-  <rect x="1138" y="0" width="6" height="630" fill="#14B8A6"/>
-  <text x="88" y="132" fill="#14B8A6" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="24" font-weight="700" letter-spacing="4">RESEARCH PORTFOLIO · 2025-2026</text>
-  <text x="88" y="276" fill="#FFFFFF" font-family="Georgia, serif" font-size="96" font-weight="600">Hadi Abdul</text>
-  <text x="92" y="354" fill="#B8C4D0" font-family="Georgia, serif" font-size="38" font-style="italic">Biomedical engineering · digital health · global health systems</text>
-  <path d="M88 488h128l42-86 64 168 64-126 44 44h144c38 0 58-44 88-44 34 0 50 44 86 44h116" fill="none" stroke="#14B8A6" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Hadi Abdul">
+  <rect width="1200" height="630" fill="#F4F8FB"/>
+  <rect x="88" y="88" width="1024" height="454" rx="24" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2"/>
+  <text x="152" y="246" fill="#0B1B2B" font-family="Georgia, serif" font-size="96" font-weight="600">Hadi Abdul</text>
+  <line x1="152" y1="320" x2="1048" y2="320" stroke="#E2E8F0" stroke-width="2"/>
+  <text x="152" y="390" fill="#64748B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="24" font-weight="700" letter-spacing="4">SCHOOL</text>
+  <text x="370" y="390" fill="#14304A" font-family="Arial, sans-serif" font-size="34" font-weight="600">Harvard University</text>
+  <text x="152" y="470" fill="#64748B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="24" font-weight="700" letter-spacing="4">LOCATION</text>
+  <text x="370" y="470" fill="#14304A" font-family="Arial, sans-serif" font-size="34" font-weight="600">Durham, NC</text>
+  <rect x="1088" y="88" width="24" height="454" rx="12" fill="#14B8A6"/>
 </svg>
