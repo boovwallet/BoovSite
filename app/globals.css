@@ -3,14 +3,14 @@
 @tailwind utilities;
 
 :root {
-  --ink: #0B1B2B;
-  --ink-soft: #14304A;
-  --accent: #14B8A6;
-  --accent-deep: #0F766E;
-  --paper: #F4F8FB;
-  --paper-2: #FFFFFF;
-  --rule: #E2E8F0;
-  --muted: #64748B;
+  --ink: #0b132b;
+  --ink-soft: #101a36;
+  --accent: #b8a7e8;
+  --accent-deep: #5b3a8c;
+  --paper: #fff8f2;
+  --paper-2: #ffffff;
+  --rule: #ddd4f7;
+  --muted: #6b6380;
 }
 
 * {
@@ -41,7 +41,7 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  font-family: var(--font-space-grotesk), system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.65;
   text-rendering: optimizeLegibility;
@@ -49,7 +49,7 @@ body {
 }
 
 ::selection {
-  background: rgba(20, 184, 166, 0.26);
+  background: rgba(184, 167, 232, 0.46);
 }
 
 :where(a, button, summary, iframe, video):focus-visible {
@@ -62,7 +62,7 @@ h2,
 h3,
 h4 {
   color: inherit;
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-sniglet), system-ui, sans-serif;
   font-weight: 600;
   line-height: 1.15;
   letter-spacing: 0;

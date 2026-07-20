@@ -1,7 +1,7 @@
 {
-  "name": "mentorship-site",
+  "name": "boov-site",
   "version": "1.0.0",
-  "description": "Hadi Abdul research portfolio website.",
+  "description": "Boov product and member card experience.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -11,20 +11,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hadiabdul8128/mentorship-site.git"
+    "url": "git+https://github.com/boovwallet/BoovSite.git"
   },
   "keywords": [
-    "research",
-    "portfolio",
-    "digital-health",
-    "wearables"
+    "boov",
+    "member-card",
+    "community-support"
   ],
-  "author": "Hadi Abdul",
+  "author": "Boov",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/hadiabdul8128/mentorship-site/issues"
+    "url": "https://github.com/boovwallet/BoovSite/issues"
   },
-  "homepage": "https://github.com/hadiabdul8128/mentorship-site#readme",
+  "homepage": "https://github.com/boovwallet/BoovSite#readme",
   "dependencies": {
     "clsx": "^2.1.1",
     "framer-motion": "^12.38.0",

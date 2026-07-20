@@ -1,65 +1,62 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
+import { Poppins, Sniglet, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
-const fraunces = Fraunces({
+const sniglet = Sniglet({
+  subsets: ["latin"],
+  weight: ["400", "800"],
+  variable: "--font-sniglet",
+  display: "swap",
+});
+
+const poppins = Poppins({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
-  style: ["normal", "italic"],
-  variable: "--font-fraunces",
-  display: "optional",
+  variable: "--font-poppins",
+  display: "swap",
 });
 
-const inter = Inter({
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  variable: "--font-inter",
-  display: "optional",
+  weight: ["400", "500", "600"],
+  variable: "--font-space-grotesk",
+  display: "swap",
 });
 
-const jetBrains = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-jetbrains",
-  display: "optional",
-});
-
-const description = "Hadi Abdul, Harvard University student based in Durham, North Carolina.";
+const description = "The first-ever technology built for the unhoused.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://mentorship-site.vercel.app"),
-  title: "Hadi Abdul",
+  metadataBase: new URL("https://boov.ai"),
+  title: "Boov",
   description,
   icons: {
     icon: "/icon.svg",
   },
   openGraph: {
-    title: "Hadi Abdul",
+    title: "Boov",
     description,
     type: "website",
-    url: "https://mentorship-site.vercel.app",
+    url: "https://boov.ai",
     images: [
       {
         url: "/og-card.svg",
         width: 1200,
         height: 630,
-        alt: "Hadi Abdul.",
+        alt: "Boov",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Hadi Abdul",
+    title: "Boov",
     description,
     images: ["/og-card.svg"],
   },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${inter.variable} ${jetBrains.variable}`}>
+    <html lang="en" className={`${sniglet.variable} ${poppins.variable} ${spaceGrotesk.variable}`}>
       <body>{children}</body>
     </html>
   );
