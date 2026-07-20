@@ -2,9 +2,18 @@
 
 import { motion, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { useRef, useState } from "react";
+import { MorphingText } from "@/components/ui/morphing-text";
 import styles from "./BoovExperience.module.css";
 
 const EDGE_LAYERS = Array.from({ length: 17 }, (_, index) => index - 8);
+
+// The opening line holds long enough to read, then melts into the wordmark and
+// stays there. The newline is rendered via white-space: pre on .heroMorph —
+// stacking it keeps the widest line close to the width of "BOOV", so the morph
+// runs at near full hero scale instead of shrinking to fit one long line.
+const HERO_WORDS = ["Tap Into\nChange", "BOOV"];
+const HERO_ENTRANCE_SECONDS = 0.9;
+const HERO_HOLD_SECONDS = 0.8;
 
 function OrbitMark() {
   return (
@@ -162,6 +171,7 @@ function MemberCard({
 export function BoovExperience() {
   const cardSceneRef = useRef<HTMLElement>(null);
   const [showBack, setShowBack] = useState(false);
+  const [wordmarkSettled, setWordmarkSettled] = useState(false);
   const prefersReducedMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: cardSceneRef,
@@ -199,7 +209,25 @@ export function BoovExperience() {
     <main className={styles.experience}>
       <section className={styles.hero} aria-labelledby="boov-heading">
         <div className={styles.pastelWash} aria-hidden="true" />
-        <h1 id="boov-heading">BOOV</h1>
+        {prefersReducedMotion ? (
+          <h1 id="boov-heading">BOOV</h1>
+        ) : (
+          <>
+            <h1 id="boov-heading" className={styles.srOnly}>
+              BOOV
+            </h1>
+            <div className={styles.heroMorphWrap} aria-hidden="true">
+              <MorphingText
+                texts={HERO_WORDS}
+                entrance={HERO_ENTRANCE_SECONDS}
+                hold={HERO_HOLD_SECONDS}
+                loop={false}
+                onComplete={() => setWordmarkSettled(true)}
+                className={`${styles.heroMorph} ${wordmarkSettled ? styles.heroMorphSettled : ""}`}
+              />
+            </div>
+          </>
+        )}
         <p>THE FIRST-EVER TECHNOLOGY BUILT FOR THE UNHOUSED</p>
         <span className={styles.heroTransition} aria-hidden="true" />
       </section>
