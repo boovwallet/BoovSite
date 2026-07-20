@@ -48,14 +48,59 @@
   background: repeating-linear-gradient(112deg, rgba(91, 58, 140, 0.018) 0 1px, transparent 1px 4px);
 }
 
-.hero h1 {
+.hero h1,
+.heroMorph {
   margin: 0;
   color: var(--boov-purple);
   font-family: var(--font-sniglet), system-ui, sans-serif;
-  font-size: 20rem;
   font-weight: 800;
   line-height: 0.78;
   letter-spacing: 0;
+}
+
+.hero h1 {
+  font-size: 20rem;
+}
+
+/* "Tap Into Change" is ~3.2x the width of "BOOV", so the morph runs at a size
+   that keeps the phrase on one line. The two morph layers are absolutely
+   positioned, so the box needs an explicit height; 0.78 matches line-height. */
+/* The opening text carries a newline, so white-space: pre stacks it as
+   "Tap Into" / "Change" — two lines at 0.78 line-height, hence 1.56em. The
+   widest line ("Tap Into") measures 4.87x its font-size in Sniglet 800; 5.15
+   adds margin so it always clears the hero's 24px side padding. */
+.heroMorph {
+  height: 1.56em;
+  font-size: min(20rem, calc((100vw - 72px) / 5.15));
+  white-space: pre;
+  transition:
+    font-size 620ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 620ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Applied once the morph settles on the single-line wordmark, which takes the
+   full hero scale. Sizes mirror the .hero h1 breakpoints below. */
+.heroMorphSettled {
+  height: 0.78em;
+  font-size: 20rem;
+}
+
+/* The hero is a centered flex column, so the wrapper has to claim full width or
+   the morph's own w-full resolves against a shrink-wrapped box. */
+.heroMorphWrap {
+  width: 100%;
+}
+
+/* Screen readers get the stable "BOOV" heading; the morph itself is aria-hidden
+   because its text is swapped imperatively on every frame. */
+.srOnly {
+  position: absolute;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  white-space: nowrap;
 }
 
 .hero p {
@@ -440,6 +485,10 @@
     font-size: 13rem;
   }
 
+  .heroMorphSettled {
+    font-size: 13rem;
+  }
+
   .stageTitle h2 {
     font-size: 6rem;
   }
@@ -451,6 +500,10 @@
   }
 
   .hero h1 {
+    font-size: 7.5rem;
+  }
+
+  .heroMorphSettled {
     font-size: 7.5rem;
   }
 
@@ -509,6 +562,10 @@
 
 @media (max-width: 390px) {
   .hero h1 {
+    font-size: 5.8rem;
+  }
+
+  .heroMorphSettled {
     font-size: 5.8rem;
   }
 
