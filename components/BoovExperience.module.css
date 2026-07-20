@@ -62,9 +62,6 @@
   font-size: 20rem;
 }
 
-/* "Tap Into Change" is ~3.2x the width of "BOOV", so the morph runs at a size
-   that keeps the phrase on one line. The two morph layers are absolutely
-   positioned, so the box needs an explicit height; 0.78 matches line-height. */
 /* The opening text carries a newline, so white-space: pre stacks it as
    "Tap Into" / "Change" — two lines at 0.78 line-height, hence 1.56em. The
    widest line ("Tap Into") measures 4.87x its font-size in Sniglet 800; 5.15
@@ -171,8 +168,27 @@
   background: linear-gradient(180deg, rgba(231, 224, 255, 0.78), rgba(184, 167, 232, 0.28) 55%, rgba(184, 167, 232, 0));
   clip-path: polygon(43% 0, 57% 0, 92% 100%, 8% 100%);
   filter: blur(38px);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0 12%, rgba(0, 0, 0, 0.16) 22%, #000 44%);
-  mask-image: linear-gradient(to bottom, transparent 0 12%, rgba(0, 0, 0, 0.16) 22%, #000 44%);
+  /* --beam-reveal is driven from scroll: it is the point the beam has reached on
+     its way down, with a soft trailing edge below it, so the light travels from
+     the source to the floor instead of the whole cone appearing at once. Stops
+     stay in ascending order because the value never goes below 34%. */
+  --beam-reveal: 135%;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0 8%,
+    rgba(0, 0, 0, 0.28) 18%,
+    #000 34%,
+    #000 var(--beam-reveal),
+    transparent calc(var(--beam-reveal) + 18%)
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0 8%,
+    rgba(0, 0, 0, 0.28) 18%,
+    #000 34%,
+    #000 var(--beam-reveal),
+    transparent calc(var(--beam-reveal) + 18%)
+  );
   transform: translateX(-50%);
 }
 
