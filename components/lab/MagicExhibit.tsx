@@ -12,14 +12,14 @@ const VARIANTS = [
 ] as const;
 
 const FEED = [
-  "Card issued — member #0042",
+  "Card issued - member #0042",
   "Groceries · $18.40 approved",
   "Transit reload · $2.75",
   "Pharmacy · $6.10 approved",
 ];
 
 /**
- * EXP-04 — Magic UI instruments on the bench: three AnimatedThemeToggler
+ * EXP-04 - Magic UI instruments on the bench: three AnimatedThemeToggler
  * variants (each one flips html.dark through a differently-shaped view
  * transition) beside a mini AnimatedList feed in a bordered column.
  */
@@ -41,12 +41,12 @@ export function MagicExhibit() {
         <div className={styles.togglers}>
           {VARIANTS.map((v) => (
             <div key={v.variant} className={styles.cell}>
-              {/* Distinct names — three otherwise-identical "toggle theme"
+              {/* Distinct names - three otherwise-identical "toggle theme"
                   buttons are indistinguishable in a screen-reader rotor. */}
               <AnimatedThemeToggler
                 variant={v.variant}
                 className={styles.toggler}
-                aria-label={`Toggle theme — ${v.variant} wipe`}
+                aria-label={`Toggle theme - ${v.variant} wipe`}
               />
               <span className={styles.cellLabel}>{v.label}</span>
             </div>
@@ -57,7 +57,7 @@ export function MagicExhibit() {
         </div>
 
         <div className={styles.listCol}>
-          <p className={styles.listLabel}>Live feed — animated list</p>
+          <p className={styles.listLabel}>Live feed - animated list</p>
           <AnimatedList className={styles.list} delay={1400}>
             {FEED.map((item) => (
               <div key={item} className={styles.listItem}>

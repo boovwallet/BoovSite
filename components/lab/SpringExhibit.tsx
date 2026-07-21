@@ -20,7 +20,7 @@ const fmt = (n: number) => `${n < 0 ? "-" : "+"}${Math.abs(n).toFixed(1).padStar
 const clampTo = (v: number, bound: number) => Math.min(bound, Math.max(-bound, v));
 
 /**
- * EXP-01 — a lightweight Boov member card on a react-spring x/y spring, dragged
+ * EXP-01 - a lightweight Boov member card on a react-spring x/y spring, dragged
  * with use-gesture. Release projects the gesture velocity into the spring so the
  * card carries inertia, rubberbanded inside ±160px. The readout is written
  * frame-by-frame via refs (spring onChange → textContent), never React state.
@@ -115,7 +115,7 @@ export function SpringExhibit() {
     });
   };
 
-  // Spring counter — starts once, when scrolled into view.
+  // Spring counter - starts once, when scrolled into view.
   const counterBoxRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
   const [{ n }, counterApi] = useSpring(() => ({
@@ -171,18 +171,18 @@ export function SpringExhibit() {
             role="button"
             tabIndex={reduced ? -1 : 0}
             onKeyDown={onKeyDown}
-            aria-label="Boov member card — drag to fling, or use arrow keys; Home recentres"
+            aria-label="Boov member card - drag to fling, or use arrow keys; Home recentres"
           >
             <span className={styles.cardWordmark}>boov</span>
             <span className={styles.cardChip} aria-hidden="true" />
             <span className={styles.cardRow} aria-hidden="true">
-              <span>MEMBER — 0042</span>
+              <span>MEMBER - 0042</span>
               <span>EST 2025</span>
             </span>
           </animated.div>
 
           <p className={styles.stageNote} aria-hidden="true">
-            DRAG BOUNDS ±{BOUND_X}px — RUBBERBAND ON
+            DRAG BOUNDS ±{BOUND_X}px - RUBBERBAND ON
           </p>
         </div>
 
@@ -190,7 +190,7 @@ export function SpringExhibit() {
           <p className={styles.sideCopy}>
             The member card rides a single x/y spring. While the pointer is down the spring
             follows immediately; on release, the gesture&rsquo;s exit velocity is handed to the
-            spring, so the card keeps its momentum and settles — never snaps.
+            spring, so the card keeps its momentum and settles - never snaps.
           </p>
 
           <div ref={counterBoxRef} className={styles.counter}>

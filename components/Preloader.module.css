@@ -34,17 +34,7 @@
 .meta {
   display: flex;
   align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.tagline {
-  max-width: 14ch;
-  color: rgba(184, 167, 232, 0.8);
-  font-family: var(--font-poppins), system-ui, sans-serif;
-  font-size: 0.8rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
+  justify-content: flex-end;
 }
 
 .counter {

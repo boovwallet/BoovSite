@@ -80,7 +80,7 @@ export function ImpactStats() {
         <div className={styles.feed}>
           <div className={styles.feedHead}>
             <span className={styles.feedTitle}>Live activity</span>
-            <span className={styles.feedCaption}>Illustrative feed — connects to live data at launch</span>
+            <span className={styles.feedCaption}>Illustrative feed - connects to live data at launch</span>
           </div>
           <div className={styles.feedViewport}>
             <ul

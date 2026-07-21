@@ -21,7 +21,7 @@ const education = [
 
 const experience = [
   {
-    organization: "World Health Organization Innovation Hub — Eastern Mediterranean Region",
+    organization: "World Health Organization Innovation Hub - Eastern Mediterranean Region",
     role: "Research Intern · Supervisor: Dr. Ahmedali M.",
     dates: "Sept 2025 – Present",
     bullets: [
@@ -30,7 +30,7 @@ const experience = [
     ],
   },
   {
-    organization: "Duke University — Big Ideas Lab (Dr. Jessilyn D., Dept. BME)",
+    organization: "Duke University - Big Ideas Lab (Dr. Jessilyn D., Dept. BME)",
     role: "Research Intern · PI: Dr. Jessilyn D.",
     dates: "Mar 2025 – Present",
     bullets: [
@@ -40,8 +40,8 @@ const experience = [
     ],
   },
   {
-    organization: "University of Oxford — Systems Biology Group (Dr. Béla N.)",
-    role: "Co-Founder, MemoryAssist · PI: Dr. Béla N. — U.S. Provisional Patent Application No. 63/755,185",
+    organization: "University of Oxford - Systems Biology Group (Dr. Béla N.)",
+    role: "Co-Founder, MemoryAssist · PI: Dr. Béla N. - U.S. Provisional Patent Application No. 63/755,185",
     dates: "Jun 2025 – Dec 2025",
     bullets: [
       "Co-Founded MemoryAssist, an AI-powered wearable to support Alzheimer's and dementia patients with real-time navigation, face recognition, and caregiver alerts.",
@@ -49,30 +49,30 @@ const experience = [
     ],
   },
   {
-    organization: "Katrick, Scotland — Passive-Cooling Technology with Clinical Application",
+    organization: "Katrick, Scotland - Passive-Cooling Technology with Clinical Application",
     role: "Developer · Supervisor: Mr. Farshad Q.",
     dates: "Jun 2023 – Jan 2025",
     bullets: [
       "Assisted Katrick's vibration-powered passive cooling module: fixed a 12% thermal-limit overshoot by identifying a 0.3 mm interface causing >40% of thermal resistance.",
-      "Contributed to Katrick + iomart's award-winning live deployment at Glasgow data centre, ~70% reduction in energy, ~100 tonnes of carbon emissions avoided — Digital City Awards: \"Best Use of Emerging Technology.\"",
+      "Contributed to Katrick + iomart's award-winning live deployment at Glasgow data centre, ~70% reduction in energy, ~100 tonnes of carbon emissions avoided - Digital City Awards: \"Best Use of Emerging Technology.\"",
     ],
   },
   {
-    organization: "Lucent — PFAS Water Filtration System",
+    organization: "Lucent - PFAS Water Filtration System",
     role: "Co-Founder & Engineer",
     dates: "Sept 2024 – Mar 2025",
     bullets: [
-      "Founded 3D-printable PFAS water filtration system with 8 filters deployed delivering ~600,000+ liters of clean water annually across partner sites including Daffodils Ladies Hostel in Koche, India and Africa Safe Water Foundation in Kenya — advanced to Diamond Challenge Grand Finals (Top 60 / 3,400 innovations).",
+      "Founded 3D-printable PFAS water filtration system with 8 filters deployed delivering ~600,000+ liters of clean water annually across partner sites including Daffodils Ladies Hostel in Koche, India and Africa Safe Water Foundation in Kenya - advanced to Diamond Challenge Grand Finals (Top 60 / 3,400 innovations).",
     ],
   },
 ] as const;
 
 const activities = [
-  "2026 Coca-Cola Scholar — Recognized among 150 of 100,000+ applicants nationwide for $20,000 scholarship (Feb 2026)",
-  "USA Mathematical Olympiad (USAMO) Qualifier — Top 250 of 300,000 (Jan 2026)",
-  "U.S. Physics Olympiad (USAPhO) Silver Medal — Top 90 of 6,000 (April 2025)",
-  "Diamond Challenge Grand Finalist — Top 60 of 3,400 teams (Mar 2025)",
-  "TEDx Speaker — \"Breaking Through Perceived Limits,\" 8.6k YouTube views (Oct 2024)",
+  "2026 Coca-Cola Scholar - Recognized among 150 of 100,000+ applicants nationwide for $20,000 scholarship (Feb 2026)",
+  "USA Mathematical Olympiad (USAMO) Qualifier - Top 250 of 300,000 (Jan 2026)",
+  "U.S. Physics Olympiad (USAPhO) Silver Medal - Top 90 of 6,000 (April 2025)",
+  "Diamond Challenge Grand Finalist - Top 60 of 3,400 teams (Mar 2025)",
+  "TEDx Speaker - \"Breaking Through Perceived Limits,\" 8.6k YouTube views (Oct 2024)",
 ] as const;
 
 export function Resume() {

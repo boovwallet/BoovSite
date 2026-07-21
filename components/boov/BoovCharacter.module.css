@@ -1,4 +1,4 @@
-/* Boov mascot rig — ported from the design artifact. One square sprite sliced
+/* Boov mascot rig - ported from the design artifact. One square sprite sliced
    by clip-paths; every layer is the same image. All geometry is %-based, so
    the whole rig scales from --boov-size alone. */
 
@@ -11,7 +11,7 @@
   pointer-events: none;
 }
 
-/* ——— grounding shadow (sits just under the feet) ——— */
+/* --- grounding shadow (sits just under the feet) --- */
 
 .shadow {
   position: absolute;
@@ -25,7 +25,7 @@
   animation: boov-shadow 2.6s ease-in-out infinite;
 }
 
-/* ——— posture (idle | walk | crawl) ——— */
+/* --- posture (idle | walk | crawl) --- */
 
 .posture {
   position: absolute;
@@ -38,7 +38,7 @@
   transform: rotate(16deg) scale(1, 0.82) translateY(6%);
 }
 
-/* ——— stacked idle loops (artifact timings) ——— */
+/* --- stacked idle loops (artifact timings) --- */
 
 .bob,
 .sway,
@@ -53,7 +53,7 @@
   animation: boov-bob 2.6s ease-in-out infinite;
 }
 
-/* Walking bob would fight the step hop — calm it down. */
+/* Walking bob would fight the step hop - calm it down. */
 .walk .bob,
 .crawl .bob {
   animation-duration: 1.3s;
@@ -74,7 +74,7 @@
   filter: drop-shadow(0 calc(var(--boov-size) * 0.03) calc(var(--boov-size) * 0.055) rgba(50, 30, 80, 0.18));
 }
 
-/* ——— sprite layers (clip-paths verbatim from the artifact) ——— */
+/* --- sprite layers (clip-paths verbatim from the artifact) --- */
 
 .base,
 .legL,
@@ -141,7 +141,7 @@
   animation: boov-head 3.4s ease-in-out infinite;
 }
 
-/* ——— step shuffle (walk / crawl) ———
+/* --- step shuffle (walk / crawl) ---
    The artifact keys its steps to a 12s master timeline; here they free-run so
    any traverse duration loops seamlessly. */
 
@@ -175,7 +175,7 @@
   transition: filter 0.3s ease;
 }
 
-/* ——— keyframes (artifact values) ——— */
+/* --- keyframes (artifact values) --- */
 
 @keyframes boov-bob {
   0%,
@@ -323,5 +323,5 @@
   }
 }
 
-/* Under reduced motion the global kill-switch zeroes all of these durations —
+/* Under reduced motion the global kill-switch zeroes all of these durations -
    the rig degrades to a static, correctly assembled character. */

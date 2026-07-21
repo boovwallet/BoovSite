@@ -8,7 +8,7 @@ type Props = {
   tool: string;
   /** Space Grotesk exhibit title. */
   title: string;
-  /** Right-aligned live readout slot — instrumentation, provided by the exhibit. */
+  /** Right-aligned live readout slot - instrumentation, provided by the exhibit. */
   readout?: ReactNode;
   children: ReactNode;
   id?: string;
@@ -17,7 +17,7 @@ type Props = {
 /**
  * Shared exhibit frame for The Lab: dashed border with corner ticks, a header
  * row (monospace index + tool label + title), and a live readout slot on the
- * right. Pure layout — exhibits fill the readout and body.
+ * right. Pure layout - exhibits fill the readout and body.
  */
 export function LabSection({ index, tool, title, readout, children, id }: Props) {
   return (

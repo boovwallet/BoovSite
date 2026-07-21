@@ -23,7 +23,7 @@
   top: 50%;
   left: 50%;
   /* Tracks the drag bounds, which derive from the measured stage on narrow
-     viewports — mirror that clamp here so guide and physics agree. */
+     viewports - mirror that clamp here so guide and physics agree. */
   width: min(320px, 76%);
   height: min(220px, 72%);
   border: 1px dashed color-mix(in srgb, var(--tech-line, rgba(91, 58, 140, 0.3)) 66%, transparent);

@@ -10,7 +10,7 @@ import styles from "./BoovReserve.module.css";
  * The release form's submit control, played by Boov himself. Once armed he
  * crawls in from the left ("touch me!" while crawling), stands up on the
  * submit slot when he arrives ("click me!"), and clicking him submits. A real
- * <button type="submit"> the whole time — the pill caption "Reserve spot" is
+ * <button type="submit"> the whole time - the pill caption "Reserve spot" is
  * the accessible name, so keyboard, AT, validation and the success flow are
  * exactly what a plain button would give.
  *
@@ -42,7 +42,7 @@ export function BoovReserve({
 
   const armed = armedProp !== undefined ? armedProp : ioArmed;
 
-  // Reduced motion: no crawl — he's simply there.
+  // Reduced motion: no crawl - he's simply there.
   useEffect(() => {
     if (prefersReducedMotion) setArrived(true);
   }, [prefersReducedMotion]);
@@ -94,7 +94,7 @@ export function BoovReserve({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [armed, prefersReducedMotion]);
 
-  // Mid-crawl click still submits — snap him onto the slot first.
+  // Mid-crawl click still submits - snap him onto the slot first.
   const snapHome = () => {
     if (!arrived) {
       tweenRef.current?.progress(1);

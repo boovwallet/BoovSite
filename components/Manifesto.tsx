@@ -56,7 +56,7 @@ export function Manifesto() {
     <section id="mission" ref={sectionRef} className={styles.section} aria-labelledby="mission-heading">
       <DisplacementFilter />
 
-      <Marquee className={styles.marquee} text="Not charity. Infrastructure." speed={30} separator="—" />
+      <Marquee className={styles.marquee} text="Not charity. Infrastructure." speed={30} separator="-" />
 
       <div className={styles.inner}>
         <div className={styles.copy}>
@@ -92,7 +92,7 @@ export function Manifesto() {
             sizes="(max-width: 900px) 90vw, 40vw"
             style={{ objectFit: "cover" }}
           />
-          <figcaption className={styles.caption}>Placeholder imagery — swap for real Boov photography.</figcaption>
+          <figcaption className={styles.caption}>Placeholder imagery - swap for real Boov photography.</figcaption>
         </figure>
       </div>
     </section>

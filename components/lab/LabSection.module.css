@@ -107,7 +107,7 @@
   letter-spacing: -0.02em;
 }
 
-/* live readout slot — instrumentation as decoration */
+/* live readout slot - instrumentation as decoration */
 .readout {
   display: flex;
   flex-direction: column;

@@ -246,7 +246,7 @@ export function CtaWaitlist() {
                         />
                         {/* Boov is the submit control: once the handed-off
                             card settles ("ready"), he crawls across the field
-                            to the slot — "touch me!" → "click me!" — and
+                            to the slot - "touch me!" → "click me!" - and
                             clicking him reserves the spot. */}
                         <BoovReserve
                           armed={phase === "ready"}

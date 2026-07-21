@@ -9,18 +9,18 @@ type Section = { id: string; label: string };
 // Home reads as chapters of one continuous product story.
 const SECTION_MAP: Record<string, Section[]> = {
   "/": [
-    { id: "top", label: "00 — INDEX" },
-    { id: "tap-to-pay", label: "01 — THE CARD" },
-    { id: "alerts", label: "02 — REPORTS" },
-    { id: "controls", label: "03 — LOCKS TO" },
-    { id: "join", label: "04 — RELEASE" },
+    { id: "top", label: "00 - INDEX" },
+    { id: "tap-to-pay", label: "01 - THE CARD" },
+    { id: "alerts", label: "02 - REPORTS" },
+    { id: "controls", label: "03 - LOCKS TO" },
+    { id: "join", label: "04 - RELEASE" },
   ],
 };
 
 function sectionsForPath(pathname: string): Section[] {
   return (
     SECTION_MAP[pathname] ?? [
-      { id: "top", label: `?? — ${pathname.replace("/", "").toUpperCase() || "INDEX"}` },
+      { id: "top", label: `?? - ${pathname.replace("/", "").toUpperCase() || "INDEX"}` },
     ]
   );
 }
@@ -28,7 +28,7 @@ function sectionsForPath(pathname: string): Section[] {
 /**
  * Blueprint framing layer (oryzo-style): a fixed dashed frame, corner ticks,
  * ruler marks, and live monospace read-outs (scroll % and active section).
- * Purely decorative — pointer-events: none — and hidden from AT.
+ * Purely decorative - pointer-events: none - and hidden from AT.
  */
 export function TechnicalOverlay() {
   const pctRef = useRef<HTMLSpanElement>(null);

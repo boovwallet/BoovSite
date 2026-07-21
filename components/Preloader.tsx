@@ -75,7 +75,6 @@ export function Preloader() {
         </div>
       </div>
       <div className={styles.meta}>
-        <span className={styles.tagline}>Not charity. Infrastructure.</span>
         <span className={styles.counter}>
           <span ref={countRef}>0</span>
           <i>%</i>

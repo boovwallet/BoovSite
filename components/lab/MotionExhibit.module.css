@@ -61,7 +61,7 @@
 }
 
 .detail {
-  /* centered via inset+margin (no CSS transform — framer's layout
+  /* centered via inset+margin (no CSS transform - framer's layout
      projection owns the transform during the shared-element move) */
   position: absolute;
   inset: 0;

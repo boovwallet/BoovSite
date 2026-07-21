@@ -13,7 +13,7 @@ const LAYERS = ["base", "legL", "legR", "armL", "armWave", "head"] as const;
  * arm sway, leg flex). "walk" adds a free-running step shuffle, "crawl" adds
  * the same shuffle over a crouched, forward-tilted posture.
  *
- * The rig never translates itself across the screen — traverse belongs to the
+ * The rig never translates itself across the screen - traverse belongs to the
  * scene, which is what keeps the loops seamless at any distance or duration.
  * Decorative by default (aria-hidden); interactive wrappers own semantics.
  */

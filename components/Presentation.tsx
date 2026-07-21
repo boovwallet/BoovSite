@@ -39,7 +39,7 @@ export function Presentation() {
   return (
     <Section id="presentation" label="04 · Oral Presentation" className="bg-white">
       <div className="max-w-3xl">
-        <h2>NCSSM Research Symposium — Slide Deck</h2>
+        <h2>NCSSM Research Symposium - Slide Deck</h2>
         <p className="mt-4 text-lg text-muted">
           Final oral presentation for the Comprehensive Research Portfolio.
         </p>

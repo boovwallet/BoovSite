@@ -11,7 +11,7 @@ const TILES = [
     num: "T-01",
     title: "Essentials only",
     note: "Category-locked",
-    body: "Every balance is restricted at the merchant-category level — groceries, transit, pharmacy. Support lands where it keeps a day livable, and quietly declines everywhere else.",
+    body: "Every balance is restricted at the merchant-category level - groceries, transit, pharmacy. Support lands where it keeps a day livable, and quietly declines everywhere else.",
   },
   {
     key: "instant",
@@ -25,7 +25,7 @@ const TILES = [
     num: "T-03",
     title: "Open ledger",
     note: "Every dollar visible",
-    body: "Donors see the route their support takes — anonymized, aggregated, and audited in the open. Proof, not promises.",
+    body: "Donors see the route their support takes - anonymized, aggregated, and audited in the open. Proof, not promises.",
   },
   {
     key: "dignity",
@@ -42,7 +42,7 @@ const SPRING: Transition = { type: "spring", stiffness: 360, damping: 30 };
 const INSTANT: Transition = { duration: 0 };
 
 /**
- * EXP-03 — framer-motion gesture grid. Tiles lift on hover and press on tap
+ * EXP-03 - framer-motion gesture grid. Tiles lift on hover and press on tap
  * (spring transitions); tapping expands the tile into a detail card through a
  * shared layoutId element, with AnimatePresence handling the exit. The readout
  * mirrors the active layoutId. Reduced motion → instant transitions, no lift.

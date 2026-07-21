@@ -78,7 +78,7 @@ const useMorphingText = (
     [texts]
   )
 
-  /** Pin a single text at full opacity with no blur — used for the opening
+  /** Pin a single text at full opacity with no blur - used for the opening
    *  hold and for the final resting state. */
   const settleOn = useCallback((text: string) => {
     const [current1, current2] = [text1Ref.current, text2Ref.current]

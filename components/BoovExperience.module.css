@@ -26,7 +26,7 @@
 }
 
 /* .experience re-declares the brand tokens locally (the card scene needs the
-   canonical values), which would otherwise pin the hero light forever — so the
+   canonical values), which would otherwise pin the hero light forever - so the
    dark flip is restated here at higher specificity. The pastel wash dims to an
    aurora instead of painting its light gradients over the dark surface. */
 :global(html.dark) .experience {

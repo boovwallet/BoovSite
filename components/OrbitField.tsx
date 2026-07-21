@@ -7,7 +7,7 @@ import * as THREE from "three";
 const COUNT = 52;
 
 // Precompute elliptical orbit placements echoing the Boov logo mark
-// (an ellipse plus orbiting dots). Deterministic — no per-render randomness.
+// (an ellipse plus orbiting dots). Deterministic - no per-render randomness.
 function useOrbitData() {
   return useMemo(() => {
     const items: { position: [number, number, number]; scale: number }[] = [];

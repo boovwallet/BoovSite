@@ -95,7 +95,7 @@ export function Reflection({ content }: ReflectionProps) {
               <source src="/assets/reflection.mp4" type="video/mp4" />
             </video>
             <p className="mt-3 px-1 text-sm text-muted">
-              Video reflection — also available as written essay above.
+              Video reflection - also available as written essay above.
             </p>
           </div>
         </div>

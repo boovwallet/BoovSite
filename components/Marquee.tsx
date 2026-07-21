@@ -16,7 +16,7 @@ type Props = {
  * Infinite horizontal marquee. Pure CSS transform loop (no layout animation);
  * pauses on hover and under reduced motion.
  */
-export function Marquee({ text, speed = 26, reverse = false, className = "", separator = "—" }: Props) {
+export function Marquee({ text, speed = 26, reverse = false, className = "", separator = "-" }: Props) {
   const prefersReducedMotion = useReducedMotion();
   const item = (
     <span className={styles.item}>

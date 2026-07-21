@@ -12,7 +12,7 @@ import styles from "./GsapExhibit.module.css";
 const PHRASE = "Proof over pity.";
 
 /**
- * EXP-02 — a pinned, scrubbed ScrollTrigger scene. The phrase's characters
+ * EXP-02 - a pinned, scrubbed ScrollTrigger scene. The phrase's characters
  * stagger up out of a skew as the user scrolls through the pin; progress is
  * mirrored into the monospace readout via onUpdate → ref.textContent (no React
  * state per frame). Under prefers-reduced-motion the phrase renders static and
@@ -91,7 +91,7 @@ export function GsapExhibit() {
           </p>
 
           <p className={styles.annotation} aria-hidden="true">
-            STAGGER 0.045/CHAR — SKEW -14° → 0° — EASE {EASE_OUT.toUpperCase()}
+            STAGGER 0.045/CHAR - SKEW -14° → 0° - EASE {EASE_OUT.toUpperCase()}
           </p>
 
           <span ref={ctaRef} style={{ display: "inline-flex", willChange: "transform" }}>

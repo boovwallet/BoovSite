@@ -365,7 +365,7 @@ function HeroIntro({ prefersReducedMotion }: { prefersReducedMotion: boolean }) 
     <section ref={heroRef} className={styles.hero} aria-labelledby="boov-heading">
       <div className={styles.pastelWash} aria-hidden="true" />
       <h1 id="boov-heading" className={styles.srOnly}>
-        Tap To Change. BOOV — The first-ever technology built for the unhoused
+        Tap To Change. BOOV - The first-ever technology built for the unhoused
       </h1>
       <div ref={wordRef} className={styles.heroWord} aria-hidden="true">
         {prefersReducedMotion ? (
@@ -420,7 +420,7 @@ export function BoovExperience() {
   const spotlightOpacity = useTransform(scrollYProgress, [0, 0.1, 0.4, 1], [0, 0.5, 0.85, 1]);
   const spotlightScaleY = useTransform(scrollYProgress, [0, 0.35, 1], [0.72, 0.95, 1.06]);
   const spotlightScaleX = useTransform(scrollYProgress, [0, 0.5, 1], [0.84, 1, 1.05]);
-  // How far down the cone the light has travelled — this makes the beam arrive
+  // How far down the cone the light has travelled - this makes the beam arrive
   // rather than appear. Range retuned for the rebuilt stage geometry (the beam
   // now starts at top:-10%, so its head stops sit higher in the element).
   const beamRevealPct = useTransform(scrollYProgress, [0, 0.6], [40, 140], { clamp: true });
@@ -434,7 +434,7 @@ export function BoovExperience() {
 
   // Built as motion templates rather than individual x/scale props: mixing
   // static numbers with motion values makes framer diff and tween them, which
-  // lags the scroll instead of tracking it — and framer's own transform would
+  // lags the scroll instead of tracking it - and framer's own transform would
   // silently drop the CSS centring these elements rely on.
   const beamTransform = useMotionTemplate`translateX(-50%) scaleX(${spotlightScaleX}) scaleY(${spotlightScaleY})`;
   const poolTransform = useMotionTemplate`translate(-50%, -50%) rotateX(64deg) scale(${poolScale})`;

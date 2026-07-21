@@ -8,13 +8,13 @@ import type { ReactNode } from "react";
  * semantics), so each incoming page rises in; the outgoing page's exit is the
  * view-transition root crossfade in globals.css.
  *
- * The tree shape is identical on server and client — branching on
+ * The tree shape is identical on server and client - branching on
  * useReducedMotion here would hydrate a different tree for reduced-motion
  * users (the hook is null during SSR) and throw. Instead MotionConfig
  * downgrades transform animation for them, and it also covers every
  * framer-driven animation on the page below (AnimatedList included).
  *
- * A div, not <main> — pages bring their own landmark elements.
+ * A div, not <main> - pages bring their own landmark elements.
  */
 export default function Template({ children }: { children: ReactNode }) {
   return (

@@ -3,7 +3,7 @@
 /**
  * Shared, invisible SVG filter used for the gallery-image hover distortion.
  * A GSAP tween animates the feDisplacementMap's `scale` attribute on hover
- * (see Manifesto.tsx) — a refined alternative to scaling/rotating the <img>,
+ * (see Manifesto.tsx) - a refined alternative to scaling/rotating the <img>,
  * which reads as a generic AI-UI hover effect.
  */
 export function DisplacementFilter() {

@@ -16,21 +16,21 @@ export const FLOW_STEPS: FlowStep[] = [
     index: "01",
     label: "Tap",
     description:
-      "A donor taps to give. No app to download, no account to create — a single contactless gesture starts the flow.",
+      "A donor taps to give. No app to download, no account to create - a single contactless gesture starts the flow.",
   },
   {
     key: "allocate",
     index: "02",
     label: "Allocate",
     description:
-      "Funds are assigned to a specific card ID as a restricted, essential-use balance — directed the moment it's given.",
+      "Funds are assigned to a specific card ID as a restricted, essential-use balance - directed the moment it's given.",
   },
   {
     key: "spend",
     index: "03",
     label: "Spend",
     description:
-      "The recipient spends at approved merchants for the things that keep a day livable — groceries, pharmacy, transit.",
+      "The recipient spends at approved merchants for the things that keep a day livable - groceries, pharmacy, transit.",
   },
   {
     key: "verify",
@@ -55,7 +55,7 @@ export const SPENDING_ALLOWED: SpendingCategory[] = [
 ];
 
 export const SPENDING_BLOCKED: SpendingCategory[] = [
-  { label: "Cash withdrawals", note: "Balances stay directed — they can't be converted to cash." },
+  { label: "Cash withdrawals", note: "Balances stay directed - they can't be converted to cash." },
   { label: "Liquor", note: "Excluded at the merchant category level, automatically." },
   { label: "Gambling", note: "Blocked everywhere the network reaches." },
   { label: "Tobacco", note: "Filtered out before a charge can complete." },
@@ -66,10 +66,10 @@ export const MANIFESTO = {
   kicker: "The thesis",
   headline: "Not charity.\nInfrastructure.",
   lead:
-    "If people could give with confidence, they would give more. Boov turns a moment of generosity into directed aid — money that reaches a person and can only be spent on the essentials of getting through a day.",
+    "If people could give with confidence, they would give more. Boov turns a moment of generosity into directed aid - money that reaches a person and can only be spent on the essentials of getting through a day.",
   body: [
     "Traditional giving asks you to trust and look away. You hand over cash and hope. Boov replaces that hope with a rail: donations become restricted balances, spendable only where they should be, verifiable from the first tap to the final purchase.",
-    "It isn't a fund or a foundation. It's payment infrastructure for directed aid — the plumbing that lets a city, a nonprofit, or a stranger on the street give with the confidence to give again.",
+    "It isn't a fund or a foundation. It's payment infrastructure for directed aid - the plumbing that lets a city, a nonprofit, or a stranger on the street give with the confidence to give again.",
   ],
   pullQuote: "If people could give with confidence, they would give more.",
 };
@@ -77,7 +77,7 @@ export const MANIFESTO = {
 export type Stat = {
   id: string;
   label: string;
-  // ILLUSTRATIVE PLACEHOLDER — not real telemetry.
+  // ILLUSTRATIVE PLACEHOLDER - not real telemetry.
   value: number;
   prefix?: string;
   suffix?: string;
@@ -100,7 +100,7 @@ export type FeedItem = {
   timeLabel: string;
 };
 
-// ILLUSTRATIVE PLACEHOLDER feed — sample activity, not live transactions.
+// ILLUSTRATIVE PLACEHOLDER feed - sample activity, not live transactions.
 export const LIVE_FEED_SAMPLE: FeedItem[] = [
   { id: "f1", category: "Groceries", merchant: "Corner Market", amountLabel: "$18.40", cardIdMasked: "BV • 0427", timeLabel: "just now" },
   { id: "f2", category: "Transit", merchant: "City Transit", amountLabel: "$2.75", cardIdMasked: "BV • 1183", timeLabel: "1 min ago" },
@@ -133,12 +133,12 @@ export const FOOTER = {
   legal: "© " + new Date().getFullYear() + " Boov. Building the first programmable aid network.",
 };
 
-// Curated, fixed Unsplash images used as PLACEHOLDERS — swap for real Boov
+// Curated, fixed Unsplash images used as PLACEHOLDERS - swap for real Boov
 // photography before launch. Chosen for dignified, human-scale, urban texture
 // (no depiction of distress). Hostname is allowlisted in next.config.mjs.
 export const PLACEHOLDER_IMAGES = {
   manifesto: {
     src: "https://images.unsplash.com/photo-1519999482648-25049ddd37b1?w=1200&q=80&auto=format&fit=crop",
-    alt: "Two people sharing a warm exchange on a city street — placeholder imagery.",
+    alt: "Two people sharing a warm exchange on a city street - placeholder imagery.",
   },
 };
