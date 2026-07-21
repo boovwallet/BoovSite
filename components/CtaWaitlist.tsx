@@ -5,7 +5,7 @@ import { Check } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { CTA_COPY } from "@/content/homepage";
-import { useMagnetic } from "@/lib/hooks/useMagnetic";
+import { BoovReserve } from "./boov/BoovReserve";
 import styles from "./CtaWaitlist.module.css";
 
 type HandoffPhase = "rest" | "approach" | "handoff" | "ready";
@@ -35,9 +35,9 @@ function CardFront() {
 }
 
 export function CtaWaitlist() {
-  const submitRef = useMagnetic<HTMLButtonElement>();
   const sectionRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
+  const fieldRef = useRef<HTMLDivElement>(null);
   const hasPlayedRef = useRef(false);
   const prefersReducedMotion = useReducedMotion();
 
@@ -226,7 +226,7 @@ export function CtaWaitlist() {
                       <label htmlFor="waitlist-email" className={styles.label}>
                         {CTA_COPY.fieldLabel}
                       </label>
-                      <div className={`${styles.field} ${error ? styles.fieldError : ""}`}>
+                      <div ref={fieldRef} className={`${styles.field} ${error ? styles.fieldError : ""}`}>
                         <input
                           id="waitlist-email"
                           type="email"
@@ -244,16 +244,16 @@ export function CtaWaitlist() {
                           aria-invalid={error}
                           aria-describedby={error ? "waitlist-error" : "waitlist-helper"}
                         />
-                        <button
-                          ref={submitRef}
-                          type="submit"
-                          className={styles.submit}
+                        {/* Boov is the submit control: once the handed-off
+                            card settles ("ready"), he crawls across the field
+                            to the slot — "touch me!" → "click me!" — and
+                            clicking him reserves the spot. */}
+                        <BoovReserve
+                          armed={phase === "ready"}
+                          originRef={fieldRef}
                           disabled={!formAvailable}
-                          data-cursor
-                          data-cursor-label="Join"
-                        >
-                          {CTA_COPY.ctaLabel}
-                        </button>
+                          size={62}
+                        />
                       </div>
                       <AnimatePresence initial={false} mode="wait">
                         {error ? (

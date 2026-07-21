@@ -22,7 +22,8 @@ export function GsapExhibit() {
   const rootRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const readoutRef = useRef<HTMLSpanElement>(null);
-  const ctaRef = useMagnetic<HTMLAnchorElement>(0.35);
+  // Link forwards no ref; magnetic rides a wrapper span.
+  const ctaRef = useMagnetic<HTMLSpanElement>(0.35);
   const reduced = useReducedMotion();
 
   useGSAP(
@@ -93,9 +94,11 @@ export function GsapExhibit() {
             STAGGER 0.045/CHAR — SKEW -14° → 0° — EASE {EASE_OUT.toUpperCase()}
           </p>
 
-          <Link ref={ctaRef} href="/#join" className={styles.cta}>
-            Back the proof
-          </Link>
+          <span ref={ctaRef} style={{ display: "inline-flex", willChange: "transform" }}>
+            <Link href="/#join" className={styles.cta}>
+              Back the proof
+            </Link>
+          </span>
         </div>
       </div>
     </LabSection>
