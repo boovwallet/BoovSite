@@ -1,25 +1,25 @@
-import { AppShell } from "@/components/AppShell";
+import { AlertsFeed } from "@/components/AlertsFeed";
 import { BoovExperience } from "@/components/BoovExperience";
 import { CtaWaitlist } from "@/components/CtaWaitlist";
-import { ImpactStats } from "@/components/ImpactStats";
-import { Manifesto } from "@/components/Manifesto";
-import { SiteFooter } from "@/components/SiteFooter";
-import { SiteNav } from "@/components/SiteNav";
+import { HorizontalChapterTransition } from "@/components/HorizontalChapterTransition";
 import { SpendingControls } from "@/components/SpendingControls";
 
+/**
+ * One continuous story, told in scroll order:
+ * preloader → the wordmark → the card itself (tap to pay) → what the card
+ * reports (the donor activity feed) → what the card locks to (spending
+ * controls) → the release (waitlist).
+ */
 export default function Home() {
   return (
     <>
-      <SiteNav />
-      <div id="top" />
-      <AppShell>
-        <BoovExperience />
-        <SpendingControls />
-        <Manifesto />
-        <ImpactStats />
-        <CtaWaitlist />
-        <SiteFooter />
-      </AppShell>
+      <BoovExperience />
+      <HorizontalChapterTransition />
+      <section id="alerts" aria-labelledby="alerts-heading">
+        <AlertsFeed />
+      </section>
+      <SpendingControls />
+      <CtaWaitlist />
     </>
   );
 }

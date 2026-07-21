@@ -29,6 +29,35 @@
   --sage: #8a9a7b;
   --tech-ink: rgba(34, 27, 48, 0.6);
   --tech-line: rgba(91, 58, 140, 0.3);
+  --card-wash: rgba(251, 247, 240, 0.42);
+  --nav-ink: rgba(91, 58, 140, 0.86);
+  --accent-contrast: #ffffff;
+  --accent-deep-hover: #4a2f73;
+}
+
+/* Dark theme: flip only the tokens the live pages consume. Surfaces go deep
+   warm ink, text goes bone, brand purples lighten so they keep contrast. The
+   card scene is dark by design and stays theme-invariant. */
+html.dark {
+  --bone: #14101f;
+  --bone-2: #1a1530;
+  --sand: #241d38;
+  --paper: #14101f;
+  --paper-2: #1a1530;
+  --boov-cream: #171226;
+  --ink-warm: #efeaf7;
+  --ink-warm-soft: #b3a9c9;
+  --rule: #3a2f55;
+  --muted: #9c92b5;
+  --tech-ink: rgba(239, 234, 247, 0.55);
+  --tech-line: rgba(184, 167, 232, 0.35);
+  --accent-deep: #b8a7e8;
+  --boov-purple: #c9b8f0;
+  --card-wash: rgba(26, 21, 48, 0.55);
+  --card-wash-blocked: rgba(36, 29, 56, 0.5);
+  --nav-ink: rgba(184, 167, 232, 0.88);
+  --accent-contrast: #171226;
+  --accent-deep-hover: #c9b8f0;
 }
 
 * {
@@ -127,12 +156,68 @@ a {
 
 .boov-fluid-fallback {
   background:
-    radial-gradient(120% 120% at 20% 0%, #fbf7f0 0%, #f2eee5 45%, #e9e3d6 100%);
+    radial-gradient(120% 120% at 20% 0%, var(--bone-2) 0%, var(--bone) 45%, var(--sand) 100%);
 }
 
 /* Hide the OS cursor only when the custom cursor is active. */
 html.has-custom-cursor,
 html.has-custom-cursor * {
   cursor: none;
+}
+
+/* ---------- View transitions ----------------------------------------- */
+
+/* Route navigations (next-view-transitions): the old page fades out; the
+   incoming page's entrance belongs to app/template.tsx, so the new snapshot
+   must not double-animate. */
+@keyframes boov-vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+::view-transition-old(root) {
+  animation: boov-vt-fade-out 0.25s ease both;
+}
+
+::view-transition-new(root) {
+  animation: none;
+}
+
+/* The nav is snapshotted as its own group so it stays put during route
+   transitions instead of fading with the page. */
+.vt-nav {
+  view-transition-name: site-nav;
+}
+
+/* Theme toggle (MagicUI animated-theme-toggler) drives its own clip-path
+   reveal on ::view-transition-new(root) and flags the run via
+   data-magicui-theme-vt. Scope overrides so the route rules above don't
+   fight it, and fold the nav back into the root snapshot so the circle
+   sweeps the whole viewport. */
+html[data-magicui-theme-vt="active"]::view-transition-old(root),
+html[data-magicui-theme-vt="active"]::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+html[data-magicui-theme-vt="active"] .vt-nav {
+  view-transition-name: none;
+}
+
+/* Firefox: pin the collapsed clip before the JS animation takes over, so the
+   new theme never paints unclipped for a frame. */
+html[data-magicui-theme-vt="active"]::view-transition-new(root) {
+  clip-path: var(--magicui-theme-vt-clip-from);
+  animation-duration: var(--magicui-theme-toggle-vt-duration, 400ms);
+}
+
+/* The universal reduced-motion kill-switch above cannot reach view-transition
+   pseudo-elements, so route navigations need their own opt-out: a plain cut. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
 }
 

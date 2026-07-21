@@ -1,13 +1,19 @@
 "use client";
 
 import { useGSAP } from "@gsap/react";
-import { motion, useMotionValueEvent, useReducedMotion, useScroll, useTransform, type MotionValue } from "framer-motion";
+import { motion, useMotionTemplate, useMotionValueEvent, useReducedMotion, useScroll, useTransform, type MotionStyle, type MotionValue } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { MorphingText } from "@/components/ui/morphing-text";
 import { FLOW_STEPS } from "@/content/homepage";
 import { gsap } from "@/lib/gsap";
+import { useLenis } from "@/lib/SmoothScroll";
 import styles from "./BoovExperience.module.css";
 
 const EDGE_LAYERS = Array.from({ length: 17 }, (_, index) => index - 8);
+const HERO_WORDS = ["Tap To\nChange", "BOOV"];
+const HERO_ENTRANCE_SECONDS = 0.9;
+const HERO_HOLD_SECONDS = 0.8;
+const HERO_SETTLE_MILLISECONDS = 620;
 
 // Scroll-progress boundaries mapped to the card animation's own keyframes:
 // tap (settle in) → allocate (spin) → spend (front→back crossfade at 0.5) → verify (rest).
@@ -214,37 +220,125 @@ function MemberCard({
 
 function HeroIntro({ prefersReducedMotion }: { prefersReducedMotion: boolean }) {
   const heroRef = useRef<HTMLElement>(null);
-  const wordRef = useRef<HTMLHeadingElement>(null);
-  const letters = "BOOV".split("");
+  const wordRef = useRef<HTMLDivElement>(null);
+  const lenis = useLenis();
+  const [introReady, setIntroReady] = useState(prefersReducedMotion);
+  const [wordmarkSettled, setWordmarkSettled] = useState(prefersReducedMotion);
+  const [introComplete, setIntroComplete] = useState(prefersReducedMotion);
 
-  // Kinetic entrance: letters rise out of a mask after the preloader lifts.
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setIntroReady(true);
+      setWordmarkSettled(true);
+      setIntroComplete(true);
+      return;
+    }
+
+    const loadState = window as typeof window & { __boovLoaded?: boolean };
+    if (loadState.__boovLoaded) {
+      setIntroReady(true);
+      return;
+    }
+
+    const reveal = () => setIntroReady(true);
+    window.addEventListener("boov:loaded", reveal, { once: true });
+    return () => window.removeEventListener("boov:loaded", reveal);
+  }, [prefersReducedMotion]);
+
+  useEffect(() => {
+    if (prefersReducedMotion || !wordmarkSettled) return;
+
+    const timeout = window.setTimeout(() => {
+      setIntroComplete(true);
+      window.dispatchEvent(new Event("boov:intro-complete"));
+    }, HERO_SETTLE_MILLISECONDS);
+
+    return () => window.clearTimeout(timeout);
+  }, [prefersReducedMotion, wordmarkSettled]);
+
+  // Lock every native scroll path while the opening wordmark resolves. The
+  // preloader controls body overflow, so the longer hero lock lives on html.
+  useEffect(() => {
+    if (prefersReducedMotion || introComplete) return;
+
+    const root = document.documentElement;
+    const previousOverflow = root.style.overflow;
+    const previousOverscroll = root.style.overscrollBehavior;
+    const blockedKeys = new Set(["ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End", " "]);
+    const preventScroll = (event: Event) => event.preventDefault();
+    const preventScrollKey = (event: KeyboardEvent) => {
+      if (blockedKeys.has(event.key)) event.preventDefault();
+    };
+
+    root.style.overflow = "hidden";
+    root.style.overscrollBehavior = "none";
+    window.scrollTo(0, 0);
+    window.addEventListener("wheel", preventScroll, { passive: false });
+    window.addEventListener("touchmove", preventScroll, { passive: false });
+    window.addEventListener("keydown", preventScrollKey);
+
+    return () => {
+      root.style.overflow = previousOverflow;
+      root.style.overscrollBehavior = previousOverscroll;
+      window.removeEventListener("wheel", preventScroll);
+      window.removeEventListener("touchmove", preventScroll);
+      window.removeEventListener("keydown", preventScrollKey);
+    };
+  }, [introComplete, prefersReducedMotion]);
+
+  useEffect(() => {
+    if (prefersReducedMotion || introComplete || !lenis) return;
+
+    lenis.scrollTo(0, { immediate: true, force: true });
+    lenis.stop();
+    return () => {
+      lenis.scrollTo(0, { immediate: true, force: true });
+      lenis.start();
+    };
+  }, [introComplete, lenis, prefersReducedMotion]);
+
+  // Keep the supporting tagline hidden until the preloader hands off.
   useGSAP(
     () => {
-      const targets = gsap.utils.toArray<HTMLElement>(`.${styles.heroLetterInner}`, heroRef.current);
-      const extras = gsap.utils.toArray<HTMLElement>(
-        [`.${styles.heroTagline}`, `.${styles.heroCue}`],
-        heroRef.current,
-      );
-      if (!targets.length) return;
+      const tagline = heroRef.current?.querySelector<HTMLElement>(`.${styles.heroTagline}`);
+      if (!tagline) return;
       if (prefersReducedMotion) {
-        gsap.set([...targets, ...extras], { clearProps: "all" });
+        gsap.set(tagline, { clearProps: "all" });
         return;
       }
-      gsap.set(targets, { yPercent: 120 });
-      gsap.set(extras, { opacity: 0, y: 20 });
-
-      // Start after the preloader signals done, or after a fixed fallback delay
-      // so the reveal is guaranteed even if the event is missed.
-      const flag = (window as typeof window & { __boovLoaded?: boolean }).__boovLoaded;
-      const delay = flag ? 0.1 : 3.4;
-      const tl = gsap.timeline({ delay });
-      tl.to(targets, { yPercent: 0, duration: 1.1, ease: "power4.out", stagger: 0.08 }).to(
-        extras,
-        { opacity: 1, y: 0, duration: 0.8, ease: "power3.out", stagger: 0.12 },
-        "-=0.5",
-      );
+      gsap.set(tagline, { opacity: 0, y: 20 });
+      if (!introReady) return;
+      gsap.to(tagline, {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        delay: 0.35,
+        ease: "power3.out",
+      });
     },
-    { scope: heroRef, dependencies: [prefersReducedMotion] },
+    { scope: heroRef, dependencies: [introReady, prefersReducedMotion] },
+  );
+
+  // The scroll cue is the visual handoff from a locked intro to the page.
+  useGSAP(
+    () => {
+      const cue = heroRef.current?.querySelector<HTMLElement>(`.${styles.heroCue}`);
+      const line = cue?.querySelector<HTMLElement>("i");
+      if (!cue) return;
+      if (prefersReducedMotion) {
+        gsap.set([cue, line], { clearProps: "all" });
+        return;
+      }
+
+      gsap.set(cue, { opacity: 0, y: 14 });
+      if (line) gsap.set(line, { opacity: 0, scaleY: 0, transformOrigin: "50% 0%" });
+      if (!introComplete) return;
+
+      const timeline = gsap.timeline({ defaults: { ease: "power3.out" } });
+      timeline.to(cue, { opacity: 1, y: 0, duration: 0.55 });
+      if (line) timeline.to(line, { opacity: 1, scaleY: 1, duration: 0.42 }, "-=0.3");
+    },
+    { scope: heroRef, dependencies: [introComplete, prefersReducedMotion] },
   );
 
   // Mouse parallax on the wordmark.
@@ -271,17 +365,27 @@ function HeroIntro({ prefersReducedMotion }: { prefersReducedMotion: boolean }) 
     <section ref={heroRef} className={styles.hero} aria-labelledby="boov-heading">
       <div className={styles.pastelWash} aria-hidden="true" />
       <h1 id="boov-heading" className={styles.srOnly}>
-        BOOV — The first-ever technology built for the unhoused
+        Tap To Change. BOOV — The first-ever technology built for the unhoused
       </h1>
       <div ref={wordRef} className={styles.heroWord} aria-hidden="true">
-        {letters.map((letter, i) => (
-          <span key={i} className={styles.heroLetter}>
-            <span className={styles.heroLetterInner}>{letter}</span>
-          </span>
-        ))}
+        {prefersReducedMotion ? (
+          <span className={`${styles.heroMorph} ${styles.heroMorphSettled}`}>BOOV</span>
+        ) : introReady ? (
+          <MorphingText
+            texts={HERO_WORDS}
+            entrance={HERO_ENTRANCE_SECONDS}
+            hold={HERO_HOLD_SECONDS}
+            loop={false}
+            onComplete={() => setWordmarkSettled(true)}
+            className={`${styles.heroMorph} ${wordmarkSettled ? styles.heroMorphSettled : ""}`}
+          />
+        ) : null}
       </div>
       <p className={styles.heroTagline}>THE FIRST-EVER TECHNOLOGY BUILT FOR THE UNHOUSED</p>
-      <div className={styles.heroCue} aria-hidden="true">
+      <div
+        className={`${styles.heroCue} ${introComplete ? styles.heroCueReady : ""}`}
+        aria-hidden="true"
+      >
         <span>Scroll</span>
         <i />
       </div>
@@ -309,7 +413,32 @@ export function BoovExperience() {
     return -89 + ((progress - 0.5) / 0.5) * 95;
   });
   const titleOpacity = useTransform(scrollYProgress, [0, 0.13, 0.4, 0.78, 1], [0.12, 0.72, 0.3, 0.7, 0.28]);
-  const spotlightOpacity = useTransform(scrollYProgress, [0, 0.16, 0.5, 1], [0.2, 0.8, 1, 0.72]);
+
+  // The stage starts dark and the spotlight builds the whole way down, rather
+  // than peaking mid-scroll and fading out. The beam grows from its source
+  // (transform-origin top) so it reads as light sweeping in, not a box scaling.
+  const spotlightOpacity = useTransform(scrollYProgress, [0, 0.1, 0.4, 1], [0, 0.5, 0.85, 1]);
+  const spotlightScaleY = useTransform(scrollYProgress, [0, 0.35, 1], [0.72, 0.95, 1.06]);
+  const spotlightScaleX = useTransform(scrollYProgress, [0, 0.5, 1], [0.84, 1, 1.05]);
+  // How far down the cone the light has travelled — this makes the beam arrive
+  // rather than appear. Range retuned for the rebuilt stage geometry (the beam
+  // now starts at top:-10%, so its head stops sit higher in the element).
+  const beamRevealPct = useTransform(scrollYProgress, [0, 0.6], [40, 140], { clamp: true });
+  // The pool only lands once the beam has nearly reached the floor.
+  const poolOpacity = useTransform(scrollYProgress, [0, 0.3, 0.62, 1], [0, 0.12, 0.72, 1]);
+  const poolScale = useTransform(scrollYProgress, [0, 0.62, 1], [0.62, 0.96, 1.08]);
+  // Edges close in as the beam brightens. Floor raised from the pre-rebuild
+  // 0.32: the stage is now translucent over the warm WebGL wash, and the scene
+  // should open dark.
+  const vignetteOpacity = useTransform(scrollYProgress, [0, 0.3, 1], [0.5, 0.75, 1]);
+
+  // Built as motion templates rather than individual x/scale props: mixing
+  // static numbers with motion values makes framer diff and tween them, which
+  // lags the scroll instead of tracking it — and framer's own transform would
+  // silently drop the CSS centring these elements rely on.
+  const beamTransform = useMotionTemplate`translateX(-50%) scaleX(${spotlightScaleX}) scaleY(${spotlightScaleY})`;
+  const poolTransform = useMotionTemplate`translate(-50%, -50%) rotateX(64deg) scale(${poolScale})`;
+  const beamReveal = useMotionTemplate`${beamRevealPct}%`;
 
   useMotionValueEvent(scrollYProgress, "change", (progress) => {
     const nextShowBack = progress >= 0.5;
@@ -332,9 +461,39 @@ export function BoovExperience() {
 
       <section id="tap-to-pay" ref={cardSceneRef} className={styles.cardScene} aria-labelledby="tap-heading">
         <div className={styles.stickyStage}>
-          <motion.div className={styles.spotlightBeam} style={{ opacity: prefersReducedMotion ? 0.9 : spotlightOpacity }} aria-hidden="true" />
-          <div className={styles.spotlightPool} aria-hidden="true" />
-          <div className={styles.stageVignette} aria-hidden="true" />
+          <motion.div
+            className={styles.spotlightBeam}
+            style={
+              // Cast: MotionStyle has no index signature for CSS custom
+              // properties, but framer applies them fine at runtime.
+              (prefersReducedMotion
+                ? { opacity: 0.9 }
+                : {
+                    opacity: spotlightOpacity,
+                    transform: beamTransform,
+                    transformOrigin: "50% 0%",
+                    "--beam-reveal": beamReveal,
+                  }) as MotionStyle
+            }
+            transition={{ duration: 0 }}
+            aria-hidden="true"
+          />
+          <motion.div
+            className={styles.spotlightPool}
+            style={
+              prefersReducedMotion
+                ? { opacity: 0.85 }
+                : { opacity: poolOpacity, transform: poolTransform }
+            }
+            transition={{ duration: 0 }}
+            aria-hidden="true"
+          />
+          <motion.div
+            className={styles.stageVignette}
+            style={{ opacity: prefersReducedMotion ? 0.85 : vignetteOpacity }}
+            transition={{ duration: 0 }}
+            aria-hidden="true"
+          />
 
           <motion.div className={styles.stageTitle} style={{ opacity: prefersReducedMotion ? 0.42 : titleOpacity }}>
             <p>BOOV ESSENTIALS</p>

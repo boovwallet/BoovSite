@@ -71,16 +71,6 @@
   position: absolute;
 }
 
-.labelTL {
-  top: 30px;
-  left: 34px;
-  font-weight: 700;
-  letter-spacing: 0.28em;
-}
-.labelTR {
-  top: 30px;
-  right: 34px;
-}
 .labelBL {
   bottom: 30px;
   left: 34px;
@@ -123,11 +113,9 @@
     inset: 10px;
     border-radius: 12px;
   }
-  .labelTL,
   .labelBL {
     left: 22px;
   }
-  .labelTR,
   .labelBR {
     right: 22px;
   }

@@ -11,16 +11,24 @@ const fragmentShader = /* glsl */ `
   uniform vec2 uMouse;      // 0..1
   uniform float uScroll;    // 0..1 page progress
   uniform float uVelocity;  // scroll velocity, damped
+  uniform float uDark;      // 0 light .. 1 dark, eased from html.dark
   uniform vec2 uResolution;
 
   varying vec2 vUv;
 
   // Warm, light "blueprint" palette (oryzo-flavoured, Boov-branded)
-  const vec3 BONE   = vec3(0.949, 0.933, 0.898);  // #f2eee5 base
-  const vec3 CREAM  = vec3(0.984, 0.968, 0.941);  // #fbf7f0 highlight
-  const vec3 SAGE   = vec3(0.796, 0.816, 0.749);  // #cbd0bf muted mat green
-  const vec3 TAN    = vec3(0.859, 0.788, 0.671);  // #dbc9ab cork tan
-  const vec3 LILAC  = vec3(0.796, 0.749, 0.878);  // #cbbfe0 soft brand tint
+  const vec3 BONE_L   = vec3(0.949, 0.933, 0.898);  // #f2eee5 base
+  const vec3 CREAM_L  = vec3(0.984, 0.968, 0.941);  // #fbf7f0 highlight
+  const vec3 SAGE_L   = vec3(0.796, 0.816, 0.749);  // #cbd0bf muted mat green
+  const vec3 TAN_L    = vec3(0.859, 0.788, 0.671);  // #dbc9ab cork tan
+  const vec3 LILAC_L  = vec3(0.796, 0.749, 0.878);  // #cbbfe0 soft brand tint
+
+  // Deep warm-ink counterparts for dark mode (match html.dark tokens)
+  const vec3 BONE_D   = vec3(0.078, 0.063, 0.122);  // #14101f
+  const vec3 CREAM_D  = vec3(0.102, 0.082, 0.188);  // #1a1530
+  const vec3 SAGE_D   = vec3(0.141, 0.169, 0.133);  // muted moss shadow
+  const vec3 TAN_D    = vec3(0.165, 0.129, 0.220);  // #2a2138 warm plum
+  const vec3 LILAC_D  = vec3(0.310, 0.259, 0.443);  // #4f4271 brand glow
 
   // simplex-ish noise (Ashima)
   vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
@@ -76,7 +84,14 @@ const fragmentShader = /* glsl */ `
     // scroll gently shifts warmth as you move down the page
     float depth=clamp(uScroll,0.0,1.0);
 
-    // soft, low-contrast blend so dark text stays readable on top
+    // theme-blended palette so the toggle sweeps rather than snaps
+    vec3 BONE  = mix(BONE_L,  BONE_D,  uDark);
+    vec3 CREAM = mix(CREAM_L, CREAM_D, uDark);
+    vec3 SAGE  = mix(SAGE_L,  SAGE_D,  uDark);
+    vec3 TAN   = mix(TAN_L,   TAN_D,   uDark);
+    vec3 LILAC = mix(LILAC_L, LILAC_D, uDark);
+
+    // soft, low-contrast blend so body text stays readable on top
     vec3 col=mix(BONE, CREAM, smoothstep(0.30,0.75,n));
     col=mix(col, SAGE, smoothstep(0.55,0.95,n)*0.35);
     col=mix(col, TAN, smoothstep(0.10,0.42,n)*(0.22+0.14*depth));
@@ -107,16 +122,32 @@ function FluidPlane() {
   const scroll = useRef(0);
   const velocity = useRef(0);
 
+  const dark = useRef(0);
+
   const uniforms = useMemo(
     () => ({
       uTime: { value: 0 },
       uMouse: { value: new THREE.Vector2(0.5, 0.5) },
       uScroll: { value: 0 },
       uVelocity: { value: 0 },
+      uDark: { value: 0 },
       uResolution: { value: new THREE.Vector2(1, 1) },
     }),
     [],
   );
+
+  // Track html.dark (the theme toggler flips it) and ease the shader palette
+  // toward the active theme instead of snapping.
+  useEffect(() => {
+    const root = document.documentElement;
+    const update = () => {
+      dark.current = root.classList.contains("dark") ? 1 : 0;
+    };
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     let lastScroll = window.scrollY;
@@ -146,6 +177,7 @@ function FluidPlane() {
     m.uniforms.uScroll.value += (scroll.current - m.uniforms.uScroll.value) * 0.06;
     velocity.current *= 0.9;
     m.uniforms.uVelocity.value += (velocity.current - m.uniforms.uVelocity.value) * 0.1;
+    m.uniforms.uDark.value += (dark.current - m.uniforms.uDark.value) * 0.08;
     m.uniforms.uResolution.value.set(size.width, size.height);
   });
 

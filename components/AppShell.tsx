@@ -3,8 +3,10 @@
 import dynamic from "next/dynamic";
 import type { ReactNode } from "react";
 import { SmoothScroll } from "@/lib/SmoothScroll";
+import { BoovCompanion } from "./BoovCompanion";
 import { Cursor } from "./Cursor";
 import { Preloader } from "./Preloader";
+import { ScrollReset } from "./ScrollReset";
 import { TechnicalOverlay } from "./TechnicalOverlay";
 
 // WebGL background is client-only (R3F) and lazy so it never blocks first paint.
@@ -19,9 +21,11 @@ export function AppShell({ children }: { children: ReactNode }) {
     <>
       <Preloader />
       <Cursor />
+      <BoovCompanion />
       <FluidBackground />
       <TechnicalOverlay />
       <SmoothScroll>
+        <ScrollReset />
         <div className="page-content">{children}</div>
       </SmoothScroll>
     </>

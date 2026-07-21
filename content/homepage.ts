@@ -111,20 +111,18 @@ export const LIVE_FEED_SAMPLE: FeedItem[] = [
 ];
 
 export const NAV_LINKS = [
-  { label: "Product", href: "#tap-to-pay" },
-  { label: "Spending controls", href: "#controls" },
-  { label: "Mission", href: "#mission" },
-  { label: "Impact", href: "#impact" },
+  { label: "Home", href: "/" },
 ] as const;
 
+// The closing chapter of the home story.
 export const CTA_COPY = {
-  kicker: "Get involved",
-  headline: "Help build the first programmable aid network.",
-  lead:
-    "Boov is being built now — with donors, nonprofits, merchants, and people who believe directed giving should be the default. Join the waitlist to help shape it.",
-  ctaLabel: "Join the waitlist",
+  headline: "Help put the first Boov cards in motion.",
+  fieldLabel: "Where should Boov send launch updates?",
+  helper: "No noise. Just meaningful launch updates from the Boov team.",
+  ctaLabel: "Join the launch",
   placeholder: "you@email.com",
-  success: "You're on the list. We'll be in touch.",
+  successHeadline: "You're in.",
+  success: "Welcome to the people helping move the first Boov cards forward.",
 };
 
 export const FOOTER = {
@@ -142,9 +140,5 @@ export const PLACEHOLDER_IMAGES = {
   manifesto: {
     src: "https://images.unsplash.com/photo-1519999482648-25049ddd37b1?w=1200&q=80&auto=format&fit=crop",
     alt: "Two people sharing a warm exchange on a city street — placeholder imagery.",
-  },
-  cta: {
-    src: "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=2000&q=80&auto=format&fit=crop",
-    alt: "A city at dusk — placeholder imagery.",
   },
 };

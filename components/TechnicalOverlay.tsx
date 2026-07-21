@@ -1,28 +1,45 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import styles from "./TechnicalOverlay.module.css";
 
-const SECTIONS: { id: string; label: string }[] = [
-  { id: "top", label: "00 — INDEX" },
-  { id: "tap-to-pay", label: "01 — THE CARD" },
-  { id: "controls", label: "02 — CONTROLS" },
-  { id: "mission", label: "03 — MANIFESTO" },
-  { id: "impact", label: "04 — IMPACT" },
-  { id: "join", label: "05 — JOIN" },
-];
+type Section = { id: string; label: string };
+
+// Home reads as chapters of one continuous product story.
+const SECTION_MAP: Record<string, Section[]> = {
+  "/": [
+    { id: "top", label: "00 — INDEX" },
+    { id: "tap-to-pay", label: "01 — THE CARD" },
+    { id: "alerts", label: "02 — REPORTS" },
+    { id: "controls", label: "03 — LOCKS TO" },
+    { id: "join", label: "04 — RELEASE" },
+  ],
+};
+
+function sectionsForPath(pathname: string): Section[] {
+  return (
+    SECTION_MAP[pathname] ?? [
+      { id: "top", label: `?? — ${pathname.replace("/", "").toUpperCase() || "INDEX"}` },
+    ]
+  );
+}
 
 /**
  * Blueprint framing layer (oryzo-style): a fixed dashed frame, corner ticks,
- * ruler marks, and live monospace read-outs (scroll %, active section, pointer
- * coordinates). Purely decorative — pointer-events: none — and hidden from AT.
+ * ruler marks, and live monospace read-outs (scroll % and active section).
+ * Purely decorative — pointer-events: none — and hidden from AT.
  */
 export function TechnicalOverlay() {
   const pctRef = useRef<HTMLSpanElement>(null);
-  const coordRef = useRef<HTMLSpanElement>(null);
-  const [section, setSection] = useState(SECTIONS[0].label);
+  const pathname = usePathname();
+  const sections = sectionsForPath(pathname);
+  const [section, setSection] = useState(sections[0].label);
 
   useEffect(() => {
+    const routeSections = sectionsForPath(pathname);
+    setSection(routeSections[0].label);
+
     let raf = 0;
     const onScroll = () => {
       if (raf) return;
@@ -34,8 +51,8 @@ export function TechnicalOverlay() {
 
         // active section = last one whose top has passed the viewport middle
         const mid = window.innerHeight * 0.5;
-        let current = SECTIONS[0].label;
-        for (const s of SECTIONS) {
+        let current = routeSections[0].label;
+        for (const s of routeSections) {
           const el = document.getElementById(s.id);
           if (!el) continue;
           if (el.getBoundingClientRect().top <= mid) current = s.label;
@@ -43,21 +60,13 @@ export function TechnicalOverlay() {
         setSection((prev) => (prev === current ? prev : current));
       });
     };
-    const onMove = (e: MouseEvent) => {
-      if (!coordRef.current) return;
-      const x = String(Math.round((e.clientX / window.innerWidth) * 100)).padStart(3, "0");
-      const y = String(Math.round((e.clientY / window.innerHeight) * 100)).padStart(3, "0");
-      coordRef.current.textContent = `X${x} Y${y}`;
-    };
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("mousemove", onMove);
     onScroll();
     return () => {
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("mousemove", onMove);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [pathname]);
 
   return (
     <div className={styles.root} aria-hidden="true">
@@ -68,10 +77,6 @@ export function TechnicalOverlay() {
       <span className={`${styles.tick} ${styles.bl}`} />
       <span className={`${styles.tick} ${styles.br}`} />
 
-      <span className={`${styles.label} ${styles.labelTL}`}>BOOV™</span>
-      <span className={`${styles.label} ${styles.labelTR}`}>
-        <span ref={coordRef}>X000 Y000</span>
-      </span>
       <span className={`${styles.label} ${styles.labelBL}`}>{section}</span>
       <span className={`${styles.label} ${styles.labelBR}`}>
         SCROLL&nbsp;<span ref={pctRef}>000</span>%
