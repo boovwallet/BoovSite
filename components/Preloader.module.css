@@ -82,3 +82,13 @@
   transform: scaleX(0);
   transform-origin: left;
 }
+
+/* Boov walks the bar: anchored at the track's left end, feet on the line;
+   the loading tween translates him across its measured width. */
+.walker {
+  position: absolute;
+  bottom: 41px;
+  left: 48px;
+  margin-left: -36px; /* centre the 72px rig on the trail's leading edge */
+  will-change: transform;
+}

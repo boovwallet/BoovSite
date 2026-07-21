@@ -116,10 +116,13 @@ export const NAV_LINKS = [
 
 // The closing chapter of the home story.
 export const CTA_COPY = {
-  headline: "Stay Updated",
-  ctaLabel: "Reserve my place",
+  headline: "Help put the first Boov cards in motion.",
+  fieldLabel: "Where should Boov send launch updates?",
+  helper: "No noise. Just meaningful launch updates from the Boov team.",
+  ctaLabel: "Join the launch",
   placeholder: "you@email.com",
-  success: "Logged. One signal — release day.",
+  successHeadline: "You're in.",
+  success: "Welcome to the people helping move the first Boov cards forward.",
 };
 
 export const FOOTER = {

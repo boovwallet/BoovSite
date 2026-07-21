@@ -35,6 +35,8 @@ export function BoovCompanion() {
   const dockY = useTransform(scrollProgress, [0, 1], [0, 14]);
   const timeoutRef = useRef<number | null>(null);
   const [ready, setReady] = useState(false);
+  const [handoffActive, setHandoffActive] = useState(false);
+  const [viewportWidth, setViewportWidth] = useState(1440);
   const [reaction, setReaction] = useState(0);
   const [greetingIndex, setGreetingIndex] = useState(0);
   const [speaking, setSpeaking] = useState(false);
@@ -45,6 +47,22 @@ export function BoovCompanion() {
     if (window.__boovLoaded) reveal();
     window.addEventListener("boov:loaded", reveal);
     return () => window.removeEventListener("boov:loaded", reveal);
+  }, []);
+
+  useEffect(() => {
+    const updateViewport = () => setViewportWidth(window.innerWidth);
+    const handleHandoff = (event: Event) => {
+      const detail = (event as CustomEvent<{ active?: boolean }>).detail;
+      setHandoffActive(Boolean(detail?.active));
+    };
+
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+    window.addEventListener("boov:handoff", handleHandoff);
+    return () => {
+      window.removeEventListener("resize", updateViewport);
+      window.removeEventListener("boov:handoff", handleHandoff);
+    };
   }, []);
 
   useEffect(() => {
@@ -97,13 +115,25 @@ export function BoovCompanion() {
     tiltY.set(0);
   };
 
+  const handoffTravel = -Math.min(460, viewportWidth * 0.31);
+  const rootAnimation = !ready
+    ? { opacity: 0, x: 110, y: 70, rotate: 12, scale: 1 }
+    : handoffActive
+      ? { opacity: 0, x: handoffTravel, y: -72, rotate: -7, scale: 0.9 }
+      : { opacity: 1, x: 0, y: 0, rotate: 0, scale: 1 };
+
   return (
     <motion.aside
       className={styles.root}
       aria-label="Boov site companion"
+      aria-hidden={handoffActive}
       initial={prefersReducedMotion ? false : { opacity: 0, x: 110, y: 70, rotate: 12 }}
-      animate={ready ? { opacity: 1, x: 0, y: 0, rotate: 0 } : { opacity: 0, x: 110, y: 70, rotate: 12 }}
-      transition={{ duration: prefersReducedMotion ? 0 : 0.9, ease: [0.16, 1, 0.3, 1] }}
+      animate={rootAnimation}
+      transition={{
+        duration: prefersReducedMotion ? 0 : handoffActive ? 1.05 : 0.9,
+        ease: [0.16, 1, 0.3, 1],
+        opacity: { duration: prefersReducedMotion ? 0 : 0.64, delay: handoffActive ? 0.3 : 0 },
+      }}
     >
       <motion.div
         className={styles.stage}
@@ -114,10 +144,10 @@ export function BoovCompanion() {
           type="button"
           data-cursor
           data-cursor-label="Touch Boov"
-          disabled={speaking}
+          disabled={speaking || handoffActive}
           onClick={() => greet(true)}
           initial={false}
-          animate={{ opacity: speaking ? 0 : 1, y: speaking ? 5 : 0 }}
+          animate={{ opacity: speaking || handoffActive ? 0 : 1, y: speaking ? 5 : 0 }}
           whileHover={prefersReducedMotion ? undefined : { y: -2 }}
           whileTap={prefersReducedMotion ? undefined : { scale: 0.96 }}
           transition={{ duration: prefersReducedMotion ? 0 : 0.22, ease: [0.16, 1, 0.3, 1] }}
@@ -132,6 +162,7 @@ export function BoovCompanion() {
           aria-label="Say hello to Boov"
           data-cursor
           data-cursor-label="Say hi"
+          disabled={handoffActive}
           onClick={() => greet(true)}
           onFocus={() => greet(false)}
           onPointerEnter={() => greet(false)}

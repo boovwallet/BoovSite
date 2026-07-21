@@ -4,11 +4,13 @@ import { useGSAP } from "@gsap/react";
 import { useReducedMotion } from "framer-motion";
 import { useRef, useState } from "react";
 import { gsap } from "@/lib/gsap";
+import { BoovCharacter } from "./boov/BoovCharacter";
 import styles from "./Preloader.module.css";
 
 /**
- * Branded intro: a counter races 0 → 100 while the brand mark draws in, then
- * the whole overlay wipes up to reveal the page. Locks scroll until done.
+ * Branded intro: the counter races 0 → 100 while Boov himself walks the
+ * loading bar left to right, drawing the progress trail behind him; then the
+ * whole overlay wipes up to reveal the page. Locks scroll until done.
  * Under reduced motion it renders nothing (page shows immediately).
  */
 export function Preloader() {
@@ -16,6 +18,8 @@ export function Preloader() {
   const rootRef = useRef<HTMLDivElement>(null);
   const countRef = useRef<HTMLSpanElement>(null);
   const barRef = useRef<HTMLSpanElement>(null);
+  const trailRef = useRef<HTMLSpanElement>(null);
+  const walkerRef = useRef<HTMLSpanElement>(null);
   const [done, setDone] = useState(false);
 
   useGSAP(
@@ -43,7 +47,13 @@ export function Preloader() {
         ease: "power2.inOut",
         onUpdate: () => {
           if (countRef.current) countRef.current.textContent = String(Math.round(counter.v));
-          if (barRef.current) barRef.current.style.transform = `scaleX(${counter.v / 100})`;
+          const track = barRef.current;
+          if (trailRef.current) trailRef.current.style.transform = `scaleX(${counter.v / 100})`;
+          if (track && walkerRef.current) {
+            // Boov's feet are the leading edge of the trail he draws.
+            const width = track.clientWidth;
+            walkerRef.current.style.transform = `translateX(${(counter.v / 100) * width}px)`;
+          }
         },
       })
         .to(`.${styles.word} span`, { yPercent: -110, duration: 0.6, ease: "power3.in", stagger: 0.04 }, "+=0.15")
@@ -71,8 +81,12 @@ export function Preloader() {
           <i>%</i>
         </span>
       </div>
-      <span className={styles.bar}>
-        <span ref={barRef} className={styles.barFill} />
+      <span ref={barRef} className={styles.bar}>
+        <span ref={trailRef} className={styles.barFill} />
+      </span>
+      {/* Walks the bar; positioned by the same tween that drives the counter. */}
+      <span ref={walkerRef} className={styles.walker}>
+        <BoovCharacter size={72} mode="walk" />
       </span>
     </div>
   );
