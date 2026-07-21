@@ -133,6 +133,29 @@
   min-height: 0;
 }
 
+.decisionFlash {
+  position: absolute;
+  z-index: 6;
+  top: 4%;
+  left: 62%;
+  width: min(620px, 62%);
+  color: #8ce2a8;
+  font-size: clamp(2.6rem, 5vw, 5rem);
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: 0;
+  text-align: center;
+  text-shadow: 0 0 24px rgba(95, 224, 141, 0.2);
+  translate: -50% 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.decisionFlash[data-status="declined"] {
+  color: #ff8fa6;
+  text-shadow: 0 0 24px rgba(255, 90, 124, 0.2);
+}
+
 .cardInteraction {
   position: absolute;
   z-index: 4;
@@ -415,9 +438,106 @@
   color: #ff8fa6;
 }
 
+.guideDock {
+  position: relative;
+  width: min(820px, 100%);
+  justify-self: center;
+  padding-top: 116px;
+}
+
+.guideMascot {
+  position: absolute;
+  z-index: 8;
+  bottom: 45px;
+  display: grid;
+  width: 108px;
+  height: 104px;
+  margin-left: -54px;
+  place-items: end center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #f2edf9;
+  cursor: pointer;
+  transform-origin: 50% 100%;
+  will-change: left, transform;
+}
+
+.guideMascot:focus-visible {
+  border-radius: 7px;
+  outline: 2px solid #d9cff2;
+  outline-offset: 4px;
+}
+
+.guideMascot:disabled {
+  color: #f2edf9;
+  cursor: default;
+}
+
+.guideBubble {
+  position: absolute;
+  z-index: 2;
+  bottom: calc(100% - 4px);
+  left: 50%;
+  width: max-content;
+  max-width: 220px;
+  padding: 8px 11px;
+  border: 1px solid rgba(9, 19, 45, 0.2);
+  border-radius: 5px;
+  background: #d9cff2;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+  color: #09132d;
+  font-size: 0.69rem;
+  font-weight: 650;
+  line-height: 1.15;
+  letter-spacing: 0;
+  text-align: center;
+  text-wrap: balance;
+  transform: translateX(-50%);
+}
+
+.guideBubble::after {
+  position: absolute;
+  top: calc(100% - 4px);
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  border-right: 1px solid rgba(9, 19, 45, 0.2);
+  border-bottom: 1px solid rgba(9, 19, 45, 0.2);
+  background: #d9cff2;
+  content: "";
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.guideMascot[data-position="start"] .guideBubble {
+  left: 8px;
+  transform: none;
+}
+
+.guideMascot[data-position="start"] .guideBubble::after {
+  left: 39px;
+}
+
+.guideMascot[data-position="end"] .guideBubble {
+  right: 8px;
+  left: auto;
+  transform: none;
+}
+
+.guideMascot[data-position="end"] .guideBubble::after {
+  right: 35px;
+  left: auto;
+}
+
+.guideCharacter {
+  position: relative;
+  z-index: 1;
+  transform-origin: 50% 100%;
+}
+
 .tabsList {
   display: grid;
-  width: min(820px, 100%);
+  width: 100%;
   height: auto;
   min-height: 50px;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -525,6 +645,13 @@
     min-height: 0;
   }
 
+  .decisionFlash {
+    top: 3%;
+    left: 50%;
+    width: 92%;
+    font-size: clamp(2.4rem, 10vw, 3.8rem);
+  }
+
   .cardInteraction {
     top: 48%;
     left: 53%;
@@ -572,6 +699,28 @@
   .tabsList {
     width: 100%;
     min-height: 50px;
+  }
+
+  .guideDock {
+    padding-top: 88px;
+  }
+
+  .guideMascot {
+    bottom: 45px;
+    width: 84px;
+    height: 82px;
+    margin-left: -42px;
+  }
+
+  .guideCharacter {
+    transform: scale(0.78);
+  }
+
+  .guideBubble {
+    bottom: calc(100% + 1px);
+    max-width: 150px;
+    padding: 7px 9px;
+    font-size: 0.62rem;
   }
 
   .tabTrigger {
@@ -622,6 +771,22 @@
   .ruleLabel,
   .resultLabel {
     bottom: 2%;
+  }
+
+  .guideDock {
+    padding-top: 72px;
+  }
+
+  .guideMascot {
+    height: 66px;
+  }
+
+  .guideCharacter {
+    transform: scale(0.64);
+  }
+
+  .guideBubble {
+    bottom: calc(100% + 4px);
   }
 }
 

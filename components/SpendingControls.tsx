@@ -15,10 +15,10 @@ import {
   type Variant,
 } from "framer-motion";
 import {
+  Banknote,
   Check,
   Droplets,
   Nfc,
-  Pill,
   ShieldCheck,
   ShoppingBasket,
   TrainFront,
@@ -27,20 +27,24 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { TransitionPanel } from "@/components/motion-primitives/transition-panel";
+import { BoovCharacter } from "@/components/boov/BoovCharacter";
 import NeuralBackground from "@/components/ui/flow-field-background";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import styles from "./SpendingControls.module.css";
 
 type Transaction = {
-  id: "groceries" | "pharmacy" | "transit" | "hygiene" | "alcohol";
+  id: "groceries" | "alcohol" | "transit" | "hygiene" | "cash";
   label: string;
   merchant: string;
   amount: string;
   category: string;
   rule: string;
   status: "approved" | "declined";
+  decision: "ACCEPTED" | "DECLINED" | "NO";
   Icon: LucideIcon;
 };
+
+type GuidePhase = "prompt" | "result" | "travelling" | "complete";
 
 const TRANSACTIONS: Transaction[] = [
   {
@@ -51,17 +55,19 @@ const TRANSACTIONS: Transaction[] = [
     category: "Grocery stores",
     rule: "Essential food merchant",
     status: "approved",
+    decision: "ACCEPTED",
     Icon: ShoppingBasket,
   },
   {
-    id: "pharmacy",
-    label: "Pharmacy",
-    merchant: "Central Pharmacy",
-    amount: "$12.75",
-    category: "Pharmacies",
-    rule: "Health and pharmacy",
-    status: "approved",
-    Icon: Pill,
+    id: "alcohol",
+    label: "Alcohol",
+    merchant: "Corner Wine & Spirits",
+    amount: "$12.60",
+    category: "Alcohol retailers",
+    rule: "Blocked category: alcohol",
+    status: "declined",
+    decision: "DECLINED",
+    Icon: Wine,
   },
   {
     id: "transit",
@@ -71,6 +77,7 @@ const TRANSACTIONS: Transaction[] = [
     category: "Public transit",
     rule: "Approved transportation",
     status: "approved",
+    decision: "ACCEPTED",
     Icon: TrainFront,
   },
   {
@@ -81,24 +88,26 @@ const TRANSACTIONS: Transaction[] = [
     category: "Personal care",
     rule: "Essential hygiene",
     status: "approved",
+    decision: "ACCEPTED",
     Icon: Droplets,
   },
   {
-    id: "alcohol",
-    label: "Alcohol",
-    merchant: "Corner Wine & Spirits",
-    amount: "$12.60",
-    category: "Alcohol retailers",
-    rule: "Blocked category: alcohol",
+    id: "cash",
+    label: "Cash withdrawal",
+    merchant: "ATM withdrawal",
+    amount: "$20.00",
+    category: "Cash access",
+    rule: "Cash withdrawal is unavailable",
     status: "declined",
-    Icon: Wine,
+    decision: "NO",
+    Icon: Banknote,
   },
 ];
 
 const ACCESSIBLE_STEPS = [
   "Tap received.",
   "Merchant recognized.",
-  "Essentials rule matched.",
+  "Card rule checked.",
   "Purchase approved or declined.",
 ] as const;
 
@@ -169,6 +178,9 @@ export function SpendingControls() {
   const [transactionId, setTransactionId] = useState<Transaction["id"]>("groceries");
   const [announcement, setAnnouncement] = useState("");
   const [fieldActive, setFieldActive] = useState(false);
+  const [guideIndex, setGuideIndex] = useState(0);
+  const [guidePhase, setGuidePhase] = useState<GuidePhase>("prompt");
+  const guideTimers = useRef<number[]>([]);
   const pointerX = useSpring(useMotionValue(0), { stiffness: 180, damping: 24, mass: 0.45 });
   const pointerY = useSpring(useMotionValue(0), { stiffness: 180, damping: 24, mass: 0.45 });
   const tiltY = useTransform(pointerX, [-1, 1], [-6, 6]);
@@ -234,13 +246,51 @@ export function SpendingControls() {
     if (prefersReducedMotion) setActiveStep(3);
   }, [prefersReducedMotion]);
 
+  useEffect(() => () => {
+    guideTimers.current.forEach((timer) => window.clearTimeout(timer));
+  }, []);
+
+  const clearGuideTimers = () => {
+    guideTimers.current.forEach((timer) => window.clearTimeout(timer));
+    guideTimers.current = [];
+  };
+
   const selectTransaction = (value: string) => {
     const next = TRANSACTIONS.find((item) => item.id === value);
     if (!next) return;
+    const nextIndex = TRANSACTIONS.findIndex((item) => item.id === next.id);
+    clearGuideTimers();
+    setGuidePhase(prefersReducedMotion ? "prompt" : "travelling");
+    setGuideIndex(nextIndex);
     setTransactionId(next.id);
     setAnnouncement(
       `${next.merchant}, ${next.amount}. Purchase ${next.status}. ${next.rule}.`,
     );
+
+    if (!prefersReducedMotion) {
+      guideTimers.current.push(window.setTimeout(() => setGuidePhase("prompt"), 880));
+    }
+  };
+
+  const runGuidedPurchase = () => {
+    if (guidePhase === "travelling" || guidePhase === "result" || guidePhase === "complete") return;
+
+    clearGuideTimers();
+    setGuidePhase(guideIndex === TRANSACTIONS.length - 1 ? "complete" : "result");
+    setAnnouncement(
+      `${transaction.decision}. ${transaction.merchant}, ${transaction.amount}. ${transaction.rule}.`,
+    );
+
+    if (guideIndex === TRANSACTIONS.length - 1) return;
+
+    guideTimers.current.push(window.setTimeout(() => {
+      const nextIndex = guideIndex + 1;
+      const next = TRANSACTIONS[nextIndex];
+      setGuidePhase("travelling");
+      setGuideIndex(nextIndex);
+      setTransactionId(next.id);
+    }, 900));
+    guideTimers.current.push(window.setTimeout(() => setGuidePhase("prompt"), 1800));
   };
 
   const updateCardTilt = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -263,15 +313,32 @@ export function SpendingControls() {
     });
   };
 
-  const finalStatus = approved
-    ? `Approved · ${transaction.amount} at ${transaction.merchant}.`
-    : "Declined · Alcohol is a blocked category.";
+  const finalStatus = transaction.id === "cash"
+    ? "NO · Cash withdrawal is unavailable."
+    : transaction.status === "approved"
+      ? `ACCEPTED · ${transaction.amount} at ${transaction.merchant}.`
+      : "DECLINED · Alcohol is a blocked category.";
   const statuses = [
     "Tap received.",
     "Merchant recognized.",
-    "Essentials rule matched.",
+    "Card rule checked.",
     finalStatus,
   ];
+  const guidedDecisionVisible = guidePhase === "result" || guidePhase === "complete";
+  const guideReacting = guidePhase === "result" || guidePhase === "complete";
+  const visibleStep = guidedDecisionVisible ? 3 : Math.min(activeStep, 2);
+  const guidePrompt = guideIndex === 0
+    ? "Click me for groceries"
+    : guideIndex === 1
+      ? "Click me for alcohol"
+      : guideIndex === 2
+        ? "Click me to take the bus"
+        : "You get the point";
+  const guidePosition = guideIndex === 0
+    ? "start"
+    : guideIndex === TRANSACTIONS.length - 1
+      ? "end"
+      : "middle";
 
   return (
     <section
@@ -303,7 +370,7 @@ export function SpendingControls() {
           <header className={styles.copy}>
             <h2 id="controls-heading">Every tap, checked.</h2>
             <TransitionPanel
-              activeIndex={activeStep}
+              activeIndex={visibleStep}
               className={styles.statusTransition}
               variants={prefersReducedMotion ? undefined : STATUS_VARIANTS}
               transition={{ duration: prefersReducedMotion ? 0 : 0.42, ease: [0.22, 1, 0.36, 1] }}
@@ -318,9 +385,26 @@ export function SpendingControls() {
           </header>
 
           <div className={styles.visual}>
+            <AnimatePresence mode="wait">
+              {guidedDecisionVisible ? (
+                <motion.div
+                  key={`${transaction.id}-${transaction.decision}`}
+                  className={styles.decisionFlash}
+                  data-status={transaction.status}
+                  initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.72, filter: "blur(12px)" }}
+                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                  exit={prefersReducedMotion ? undefined : { opacity: 0, scale: 1.08, filter: "blur(8px)" }}
+                  transition={{ duration: prefersReducedMotion ? 0 : 0.34, ease: [0.22, 1, 0.36, 1] }}
+                  aria-live="assertive"
+                >
+                  {transaction.decision}
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
+
             <motion.div
               className={styles.terminal}
-              animate={{ opacity: 1, scale: activeStep === 0 ? 0.94 : 1 }}
+              animate={{ opacity: 1, scale: visibleStep === 0 ? 0.94 : 1 }}
               transition={{ duration: prefersReducedMotion ? 0 : 0.46, ease: [0.22, 1, 0.36, 1] }}
               aria-hidden="true"
             >
@@ -332,13 +416,13 @@ export function SpendingControls() {
               className={styles.connection}
               aria-hidden="true"
               initial={false}
-              animate={{ opacity: activeStep >= 1 ? 1 : 0, scaleX: activeStep >= 1 ? 1 : 0.12 }}
+              animate={{ opacity: visibleStep >= 1 ? 1 : 0, scaleX: visibleStep >= 1 ? 1 : 0.12 }}
               transition={{ duration: prefersReducedMotion ? 0 : 0.46, ease: [0.22, 1, 0.36, 1] }}
             ><i /></motion.span>
 
             <motion.div className={styles.cardInteraction} animate={burstControls}>
               <MemberCard
-                activeStep={activeStep}
+                activeStep={visibleStep}
                 reducedMotion={prefersReducedMotion}
                 tiltX={tiltX}
                 tiltY={tiltY}
@@ -346,7 +430,7 @@ export function SpendingControls() {
             </motion.div>
 
             <AnimatePresence mode="wait" initial={false}>
-              {activeStep >= 2 ? (
+              {visibleStep >= 2 ? (
                 <motion.div
                   key={`${transaction.id}-rule`}
                   className={styles.ruleLabel}
@@ -362,7 +446,7 @@ export function SpendingControls() {
             </AnimatePresence>
 
             <AnimatePresence mode="wait" initial={false}>
-              {activeStep === 3 ? (
+              {visibleStep === 3 ? (
                 <motion.div
                   key={`${transaction.id}-result`}
                   className={styles.resultLabel}
@@ -373,32 +457,80 @@ export function SpendingControls() {
                   transition={{ duration: prefersReducedMotion ? 0 : 0.4, ease: [0.22, 1, 0.36, 1] }}
                 >
                   <StatusIcon aria-hidden="true" />
-                  <span><small>{approved ? "Approved" : "Declined"}</small>{transaction.merchant}</span>
+                  <span><small>{transaction.decision}</small>{transaction.merchant}</span>
                   <strong>{transaction.amount}</strong>
                 </motion.div>
               ) : null}
             </AnimatePresence>
           </div>
 
-          <Tabs value={transactionId} onValueChange={selectTransaction}>
-            <TabsList className={styles.tabsList} aria-label="Try another purchase">
-              {TRANSACTIONS.map((item) => {
-                const Icon = item.Icon;
-                return (
-                  <TabsTrigger className={styles.tabTrigger} value={item.id} key={item.id}>
-                    <Icon aria-hidden="true" />
-                    <span>{item.label}</span>
-                  </TabsTrigger>
-                );
-              })}
-            </TabsList>
-          </Tabs>
+          <div className={styles.guideDock}>
+            <motion.button
+              type="button"
+              className={styles.guideMascot}
+              data-position={guidePosition}
+              data-phase={guidePhase}
+              aria-label={`Run ${transaction.label} example`}
+              disabled={guidePhase === "travelling" || guidePhase === "result" || guidePhase === "complete"}
+              onClick={runGuidedPurchase}
+              animate={
+                prefersReducedMotion
+                  ? { left: `${((guideIndex + 0.5) / TRANSACTIONS.length) * 100}%`, y: 0, rotate: 0 }
+                  : {
+                      left: `${((guideIndex + 0.5) / TRANSACTIONS.length) * 100}%`,
+                      y: guidePhase === "travelling"
+                        ? [0, -18, 5, -12, 0]
+                        : guideReacting
+                          ? [0, -22, 0]
+                          : [0, -5, 0],
+                      rotate: guidePhase === "travelling" ? [0, -5, 4, -2, 0] : 0,
+                    }
+              }
+              transition={
+                prefersReducedMotion
+                  ? { duration: 0 }
+                  : {
+                      left: { type: "spring", stiffness: 82, damping: 16, mass: 0.82 },
+                      y: guidePhase === "travelling"
+                        ? { duration: 0.88, times: [0, 0.24, 0.5, 0.74, 1], ease: [0.22, 1, 0.36, 1] }
+                        : guideReacting
+                          ? { duration: 0.62, times: [0, 0.46, 1], ease: [0.22, 1, 0.36, 1] }
+                          : { duration: 2.6, repeat: Infinity, ease: "easeInOut" },
+                      rotate: { duration: 0.88, ease: [0.22, 1, 0.36, 1] },
+                    }
+              }
+              whileHover={prefersReducedMotion ? undefined : { scale: 1.045 }}
+              whileTap={prefersReducedMotion ? undefined : { scale: 0.94 }}
+            >
+              <span className={styles.guideBubble}>{guidePrompt}</span>
+              <BoovCharacter
+                className={styles.guideCharacter}
+                size={94}
+                mode={!prefersReducedMotion && guidePhase === "travelling" ? "crawl" : "idle"}
+                wave={guidePhase === "prompt" || guidePhase === "complete"}
+              />
+            </motion.button>
+
+            <Tabs value={transactionId} onValueChange={selectTransaction}>
+              <TabsList className={styles.tabsList} aria-label="Try another purchase">
+                {TRANSACTIONS.map((item) => {
+                  const Icon = item.Icon;
+                  return (
+                    <TabsTrigger className={styles.tabTrigger} value={item.id} key={item.id}>
+                      <Icon aria-hidden="true" />
+                      <span>{item.label}</span>
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
+            </Tabs>
+          </div>
         </div>
       </div>
 
       <ol className={styles.srOnly} aria-label="How Boov authorizes a purchase">
         {ACCESSIBLE_STEPS.map((step, index) => (
-          <li key={step} aria-current={index === activeStep ? "step" : undefined}>{step}</li>
+          <li key={step} aria-current={index === visibleStep ? "step" : undefined}>{step}</li>
         ))}
       </ol>
       <p className={styles.srOnly} role="status" aria-live="polite" aria-atomic="true">
