@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import type { ReactNode } from "react";
 import { SmoothScroll } from "@/lib/SmoothScroll";
+import { BoovCompanion } from "./BoovCompanion";
 import { Cursor } from "./Cursor";
 import { Preloader } from "./Preloader";
 import { ScrollReset } from "./ScrollReset";
@@ -20,6 +21,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <>
       <Preloader />
       <Cursor />
+      <BoovCompanion />
       <FluidBackground />
       <TechnicalOverlay />
       <SmoothScroll>
