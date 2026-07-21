@@ -159,9 +159,30 @@
   animation: boov-trot 0.62s ease-in-out infinite;
 }
 
-.crawl .legL,
+/* Crawl gait — a real step cycle rather than the walk's shuffle, because when
+   he is gripping a wall this is the whole performance. Each leg: plant
+   forward, drive back through stance, lift clear, swing forward, plant. The
+   right leg runs the same curve half a cycle out (negative delay) so the two
+   stay in antiphase; arms counter-swing contralaterally and the body bobs once
+   per step. */
+.crawl .legL {
+  animation: boov-crawl-step 0.52s linear infinite;
+}
+
 .crawl .legR {
-  animation-duration: 0.48s;
+  animation: boov-crawl-step 0.52s linear -0.26s infinite;
+}
+
+.crawl .armL .part {
+  animation: boov-crawl-reach 0.52s ease-in-out -0.26s infinite;
+}
+
+.crawl .armWave .part {
+  animation: boov-crawl-reach 0.52s ease-in-out infinite;
+}
+
+.crawl .body {
+  animation: boov-crawl-bob 0.26s ease-in-out infinite;
 }
 
 .blushing .base .part,
@@ -304,6 +325,49 @@
   }
   50% {
     transform: skewX(6deg);
+  }
+}
+
+/* One leg's full gait. Stance (0→50%) keeps the foot planted while the hip
+   rotation drives the body past it; swing (62→100%) lifts it clear and throws
+   it forward to plant again. */
+@keyframes boov-crawl-step {
+  0% {
+    transform: translateY(0) rotate(14deg);
+  }
+  50% {
+    transform: translateY(0) rotate(-13deg);
+  }
+  62% {
+    transform: translateY(-10%) rotate(-9deg);
+  }
+  86% {
+    transform: translateY(-11%) rotate(9deg);
+  }
+  100% {
+    transform: translateY(0) rotate(14deg);
+  }
+}
+
+@keyframes boov-crawl-reach {
+  0% {
+    transform: rotate(-15deg);
+  }
+  50% {
+    transform: rotate(15deg);
+  }
+  100% {
+    transform: rotate(-15deg);
+  }
+}
+
+@keyframes boov-crawl-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2.6%);
   }
 }
 
