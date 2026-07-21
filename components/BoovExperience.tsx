@@ -28,38 +28,65 @@ function stepIndexForProgress(progress: number) {
 
 function FlowRail({
   scrollYProgress,
-  staticActive,
+  onSelect,
+  reducedMotion,
 }: {
   scrollYProgress: MotionValue<number>;
-  staticActive: boolean;
+  onSelect: (index: number) => void;
+  reducedMotion: boolean;
 }) {
   const [active, setActive] = useState(0);
+  const [spin, setSpin] = useState({ index: -1, nonce: 0 });
 
   useMotionValueEvent(scrollYProgress, "change", (progress) => {
     const next = stepIndexForProgress(progress);
     setActive((current) => (current === next ? current : next));
   });
 
+  const handleSelect = (index: number) => {
+    setActive(index);
+    setSpin((current) => ({ index, nonce: current.nonce + 1 }));
+    onSelect(index);
+  };
+
   return (
     <div className={styles.flowRailWrap}>
       <ol className={styles.flowRail} aria-label="How Boov works">
         {FLOW_STEPS.map((step, index) => {
-          const isActive = staticActive || index === active;
+          const isActive = index === active;
           return (
             <li
               key={step.key}
               className={`${styles.flowStep} ${isActive ? styles.flowStepActive : ""}`}
             >
-              <span className={styles.flowIndex}>{step.index}</span>
-              <span className={styles.flowLabel}>{step.label}</span>
+              <motion.button
+                type="button"
+                className={styles.flowButton}
+                onClick={() => handleSelect(index)}
+                aria-current={isActive ? "step" : undefined}
+                aria-label={`${step.index}. ${step.label}: ${step.description}`}
+                data-cursor
+                data-cursor-label={`Show ${step.label}`}
+                whileTap={reducedMotion ? undefined : { scale: 0.95 }}
+              >
+                <motion.span
+                  key={spin.index === index ? `${step.key}-${spin.nonce}` : step.key}
+                  className={styles.flowIndex}
+                  initial={spin.index === index && !reducedMotion ? { rotate: -360, scale: 0.72 } : false}
+                  animate={{ rotate: 0, scale: 1 }}
+                  transition={{ duration: reducedMotion ? 0 : 0.62, ease: [0.16, 1, 0.3, 1] }}
+                  aria-hidden="true"
+                >
+                  {step.index}
+                </motion.span>
+                <span className={styles.flowLabel}>{step.label}</span>
+              </motion.button>
             </li>
           );
         })}
       </ol>
       <p className={styles.flowDesc}>
-        {staticActive
-          ? "Tap to give, allocate to a card, spend at approved merchants, verify every transaction."
-          : FLOW_STEPS[active].description}
+        {FLOW_STEPS[active].description}
       </p>
     </div>
   );
@@ -398,6 +425,7 @@ export function BoovExperience() {
   const cardSceneRef = useRef<HTMLElement>(null);
   const [showBack, setShowBack] = useState(false);
   const prefersReducedMotion = useReducedMotion();
+  const lenis = useLenis();
   const { scrollYProgress } = useScroll({
     target: cardSceneRef,
     offset: ["start start", "end end"],
@@ -443,7 +471,17 @@ export function BoovExperience() {
   useMotionValueEvent(scrollYProgress, "change", (progress) => {
     const nextShowBack = progress >= 0.5;
     setShowBack((current) => (current === nextShowBack ? current : nextShowBack));
+    document.documentElement.dataset.cardSceneActive = progress > 0.01 && progress < 0.99
+      ? "true"
+      : "false";
   });
+
+  useEffect(
+    () => () => {
+      delete document.documentElement.dataset.cardSceneActive;
+    },
+    [],
+  );
 
   const cardMotion = prefersReducedMotion
     ? { opacity: 1, y: 0, scale: 1, rotateX: -3, rotateY: -12 }
@@ -454,6 +492,31 @@ export function BoovExperience() {
         rotateX: cardRotateX,
         rotateY: cardRotateY,
       };
+
+  const handleFlowSelect = (index: number) => {
+    const section = cardSceneRef.current;
+    if (!section) return;
+
+    const stepTargets = [0.1, 0.34, 0.66, 0.91];
+    const sectionTop = section.getBoundingClientRect().top + window.scrollY;
+    const scrollDistance = Math.max(0, section.offsetHeight - window.innerHeight);
+    const target = sectionTop + scrollDistance * stepTargets[index];
+
+    if (prefersReducedMotion) {
+      window.scrollTo({ top: target, behavior: "auto" });
+      return;
+    }
+
+    if (lenis) {
+      lenis.scrollTo(target, {
+        duration: 1.05,
+        easing: (value) => 1 - Math.pow(1 - value, 4),
+      });
+      return;
+    }
+
+    window.scrollTo({ top: target, behavior: "smooth" });
+  };
 
   return (
     <main className={styles.experience}>
@@ -509,7 +572,11 @@ export function BoovExperience() {
             </motion.div>
           </div>
 
-          <FlowRail scrollYProgress={scrollYProgress} staticActive={Boolean(prefersReducedMotion)} />
+          <FlowRail
+            scrollYProgress={scrollYProgress}
+            onSelect={handleFlowSelect}
+            reducedMotion={Boolean(prefersReducedMotion)}
+          />
         </div>
       </section>
     </main>

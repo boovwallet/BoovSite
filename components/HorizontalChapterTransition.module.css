@@ -1,7 +1,7 @@
 .section {
   position: relative;
-  height: 155svh;
-  min-height: 980px;
+  height: 170svh;
+  min-height: 1080px;
   color: var(--ink-warm, #efeaf7);
 }
 
@@ -423,8 +423,8 @@
 
 @media (max-width: 760px) {
   .section {
-    height: 145svh;
-    min-height: 900px;
+    height: 160svh;
+    min-height: 960px;
   }
 
   .panelGrid {

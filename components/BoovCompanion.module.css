@@ -6,7 +6,7 @@
   width: clamp(124px, 11vw, 158px);
   pointer-events: none;
   transform-origin: right bottom;
-  transition: opacity 220ms ease, visibility 220ms ease;
+  transition: bottom 420ms cubic-bezier(0.16, 1, 0.3, 1), opacity 220ms ease, visibility 220ms ease;
 }
 
 :global(html[data-controls-active="true"]) .root {
@@ -328,6 +328,10 @@
     right: 14px;
     bottom: max(56px, calc(env(safe-area-inset-bottom) + 46px));
     width: 102px;
+  }
+
+  :global(html[data-card-scene-active="true"]) .root {
+    bottom: max(180px, calc(env(safe-area-inset-bottom) + 170px));
   }
 
   .touchPrompt {

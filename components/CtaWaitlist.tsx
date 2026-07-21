@@ -2,7 +2,14 @@
 
 import Image from "next/image";
 import { Check } from "lucide-react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useMotionValueEvent,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { CTA_COPY } from "@/content/homepage";
 import { BoovReserve } from "./boov/BoovReserve";
@@ -38,7 +45,6 @@ export function CtaWaitlist() {
   const sectionRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const fieldRef = useRef<HTMLDivElement>(null);
-  const hasPlayedRef = useRef(false);
   const prefersReducedMotion = useReducedMotion();
 
   const [email, setEmail] = useState("");
@@ -47,11 +53,37 @@ export function CtaWaitlist() {
   const [phase, setPhase] = useState<HandoffPhase>("rest");
   const [sectionActive, setSectionActive] = useState(false);
 
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end end"],
+  });
+  const cardX = useTransform(scrollYProgress, [0, 0.18, 0.42, 1], [-150, -150, 0, 0]);
+  const cardY = useTransform(scrollYProgress, [0, 0.18, 0.42, 1], [30, 30, -28, -28]);
+  const cardScale = useTransform(scrollYProgress, [0, 0.18, 0.42, 1], [0.7, 0.7, 1, 1]);
+  const cardRotateY = useTransform(scrollYProgress, [0, 0.42, 0.72, 1], [0, 0, 180, 180]);
+
+  useMotionValueEvent(scrollYProgress, "change", (progress) => {
+    if (prefersReducedMotion) {
+      setPhase("ready");
+      return;
+    }
+
+    const nextPhase: HandoffPhase = progress < 0.18
+      ? "approach"
+      : progress < 0.72
+        ? "handoff"
+        : "ready";
+    setPhase((current) => current === nextPhase ? current : nextPhase);
+  });
+
+  useEffect(() => {
+    if (prefersReducedMotion) setPhase("ready");
+  }, [prefersReducedMotion]);
+
   useEffect(() => {
     const section = sectionRef.current;
     const stage = stageRef.current;
     if (!section || !stage) return;
-    const timers: number[] = [];
 
     const announceHandoff = (active: boolean) => {
       window.dispatchEvent(new CustomEvent("boov:handoff", { detail: { active } }));
@@ -62,29 +94,16 @@ export function CtaWaitlist() {
         const active = entry.isIntersecting;
         setSectionActive(active);
         announceHandoff(active);
-
-        if (!active || hasPlayedRef.current) return;
-        hasPlayedRef.current = true;
-
-        if (prefersReducedMotion) {
-          setPhase("ready");
-          return;
-        }
-
-        setPhase("approach");
-        timers.push(window.setTimeout(() => setPhase("handoff"), 980));
-        timers.push(window.setTimeout(() => setPhase("ready"), 2180));
       },
-      { threshold: 0.6, rootMargin: "0px 0px -8% 0px" },
+      { threshold: 0.3, rootMargin: "0px 0px -8% 0px" },
     );
 
     observer.observe(stage);
     return () => {
       observer.disconnect();
-      timers.forEach((timer) => window.clearTimeout(timer));
       announceHandoff(false);
     };
-  }, [prefersReducedMotion]);
+  }, []);
 
   const validateEmail = () => {
     const valid = EMAIL_PATTERN.test(email.trim());
@@ -104,14 +123,7 @@ export function CtaWaitlist() {
     setSubmitted(true);
   };
 
-  const flipRotation = submitted ? 900 : phase === "ready" || phase === "rest" ? 180 : 0;
-  const cardPosition =
-    phase === "approach"
-      ? { x: -150, y: 30, scale: 0.7 }
-      : phase === "handoff"
-        ? { x: -44, y: 8, scale: 0.84 }
-        : { x: 0, y: 0, scale: 1 };
-  const formAvailable = phase === "ready" || phase === "rest";
+  const formAvailable = phase === "ready";
 
   return (
     <section
@@ -179,105 +191,109 @@ export function CtaWaitlist() {
 
           <div className={styles.cardScene}>
             <motion.div
-              className={styles.flipCard}
-              initial={false}
-              animate={{
-                ...cardPosition,
-                rotateY: flipRotation,
-              }}
-              transition={{
-                duration: prefersReducedMotion ? 0 : submitted ? 1.05 : phase === "ready" ? 1.5 : 0.72,
-                ease: [0.16, 1, 0.3, 1],
-              }}
+              className={styles.flipCardMotion}
+              style={prefersReducedMotion
+                ? { x: 0, y: 0, scale: 1, rotateY: 180 }
+                : { x: cardX, y: cardY, scale: cardScale, rotateY: cardRotateY }}
             >
-              <CardFront />
+              <motion.div
+                className={styles.flipCard}
+                initial={false}
+                animate={{ rotateY: submitted ? 720 : 0 }}
+                transition={{
+                  duration: prefersReducedMotion ? 0 : 1.05,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+              >
+                <CardFront />
 
-              <div className={`${styles.cardFace} ${styles.cardBack}`}>
-                <AnimatePresence mode="wait" initial={false}>
-                  {submitted ? (
-                    <motion.div
-                      key="success"
-                      className={styles.success}
-                      role="status"
-                      aria-live="polite"
-                      initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.94 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: prefersReducedMotion ? 0 : 0.35, delay: prefersReducedMotion ? 0 : 0.48 }}
-                    >
-                      <span className={styles.successMark}>
-                        <Check aria-hidden="true" />
-                      </span>
-                      <div>
-                        <strong>{CTA_COPY.successHeadline}</strong>
-                        <p>{CTA_COPY.success}</p>
-                      </div>
-                      <span className={styles.launchStatus}>BOOV LAUNCH LIST · EARLY SUPPORTER</span>
-                    </motion.div>
-                  ) : (
-                    <motion.form
-                      key="form"
-                      className={styles.form}
-                      onSubmit={onSubmit}
-                      noValidate
-                      initial={false}
-                      animate={{ opacity: formAvailable ? 1 : 0 }}
-                      transition={{ duration: prefersReducedMotion ? 0 : 0.34, delay: phase === "ready" ? 0.78 : 0 }}
-                    >
-                      <label htmlFor="waitlist-email" className={styles.label}>
-                        {CTA_COPY.fieldLabel}
-                      </label>
-                      <div ref={fieldRef} className={`${styles.field} ${error ? styles.fieldError : ""}`}>
-                        <input
-                          id="waitlist-email"
-                          type="email"
-                          inputMode="email"
-                          autoComplete="email"
-                          className={styles.input}
-                          placeholder={CTA_COPY.placeholder}
-                          value={email}
-                          disabled={!formAvailable}
-                          onBlur={validateEmail}
-                          onChange={(event) => {
-                            setEmail(event.target.value);
-                            if (error) setError(false);
-                          }}
-                          aria-invalid={error}
-                          aria-describedby={error ? "waitlist-error" : "waitlist-helper"}
-                        />
-                        {/* Boov is the submit control: once the handed-off
-                            card settles ("ready"), he crawls across the field
-                            to the slot - "touch me!" → "click me!" - and
-                            clicking him reserves the spot. */}
-                        <BoovReserve
-                          armed={phase === "ready"}
-                          originRef={fieldRef}
-                          disabled={!formAvailable}
-                          size={62}
-                        />
-                      </div>
-                      <AnimatePresence initial={false} mode="wait">
-                        {error ? (
-                          <motion.p
-                            id="waitlist-error"
-                            key="error"
-                            className={styles.errorText}
-                            role="alert"
-                            initial={prefersReducedMotion ? false : { opacity: 0, y: -4 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0 }}
-                          >
-                            Enter a valid email address.
-                          </motion.p>
-                        ) : (
-                          <motion.p id="waitlist-helper" key="helper" className={styles.helper}>
-                            {CTA_COPY.helper}
-                          </motion.p>
-                        )}
-                      </AnimatePresence>
-                    </motion.form>
-                  )}
-                </AnimatePresence>
-              </div>
+                <div className={`${styles.cardFace} ${styles.cardBack}`}>
+                  <AnimatePresence mode="wait" initial={false}>
+                    {submitted ? (
+                      <motion.div
+                        key="success"
+                        className={styles.success}
+                        role="status"
+                        aria-live="polite"
+                        initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.94 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: prefersReducedMotion ? 0 : 0.35, delay: prefersReducedMotion ? 0 : 0.48 }}
+                      >
+                        <span className={styles.successMark}>
+                          <Check aria-hidden="true" />
+                        </span>
+                        <div>
+                          <strong>{CTA_COPY.successHeadline}</strong>
+                          <p>{CTA_COPY.success}</p>
+                        </div>
+                        <span className={styles.launchStatus}>BOOV LAUNCH LIST · EARLY SUPPORTER</span>
+                      </motion.div>
+                    ) : (
+                      <motion.form
+                        key="form"
+                        className={styles.form}
+                        onSubmit={onSubmit}
+                        noValidate
+                        initial={false}
+                        animate={{ opacity: formAvailable ? 1 : 0 }}
+                        transition={{ duration: prefersReducedMotion ? 0 : 0.34 }}
+                      >
+                        <label htmlFor="waitlist-email" className={styles.label}>
+                          {CTA_COPY.fieldLabel}
+                        </label>
+                        <div ref={fieldRef} className={`${styles.field} ${error ? styles.fieldError : ""}`}>
+                          <input
+                            id="waitlist-email"
+                            type="email"
+                            inputMode="email"
+                            autoComplete="email"
+                            className={styles.input}
+                            placeholder={CTA_COPY.placeholder}
+                            value={email}
+                            disabled={!formAvailable}
+                            onBlur={validateEmail}
+                            onChange={(event) => {
+                              setEmail(event.target.value);
+                              if (error) setError(false);
+                            }}
+                            aria-invalid={error}
+                            aria-describedby={error ? "waitlist-error" : "waitlist-helper"}
+                          />
+                          {/* Boov is the submit control: once the handed-off
+                              card settles ("ready"), he crawls across the field
+                              to the slot - "touch me!" → "click me!" - and
+                              clicking him reserves the spot. */}
+                          <BoovReserve
+                            armed={phase === "ready"}
+                            originRef={fieldRef}
+                            disabled={!formAvailable}
+                            size={62}
+                          />
+                        </div>
+                        <AnimatePresence initial={false} mode="wait">
+                          {error ? (
+                            <motion.p
+                              id="waitlist-error"
+                              key="error"
+                              className={styles.errorText}
+                              role="alert"
+                              initial={prefersReducedMotion ? false : { opacity: 0, y: -4 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0 }}
+                            >
+                              Enter a valid email address.
+                            </motion.p>
+                          ) : (
+                            <motion.p id="waitlist-helper" key="helper" className={styles.helper}>
+                              {CTA_COPY.helper}
+                            </motion.p>
+                          )}
+                        </AnimatePresence>
+                      </motion.form>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
             </motion.div>
           </div>
         </div>
