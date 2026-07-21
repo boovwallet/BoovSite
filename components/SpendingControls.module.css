@@ -854,11 +854,19 @@
   }
 
   .ruleLabel {
-    bottom: 76px;
+    top: 4px;
+    right: 2%;
+    bottom: auto;
+    left: auto;
+  }
+
+  .ruleLabel::before {
+    right: calc(100% + 12px);
+    left: auto;
   }
 
   .resultLabel {
-    bottom: 2%;
+    display: none;
   }
 
   .guideDock {

@@ -118,7 +118,6 @@ export const NAV_LINKS = [
 export const CTA_COPY = {
   headline: "Help put the first Boov cards in motion.",
   fieldLabel: "Where should Boov send launch updates?",
-  helper: "No noise. Just meaningful launch updates from the Boov team.",
   ctaLabel: "Join the launch",
   placeholder: "you@email.com",
   successHeadline: "You're in.",

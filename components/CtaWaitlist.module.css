@@ -112,8 +112,8 @@
 .localBoov {
   position: absolute;
   z-index: 3;
-  bottom: 0;
-  left: 0;
+  bottom: -18px;
+  left: -36px;
   width: clamp(154px, 18vw, 220px);
   transform-origin: center bottom;
   will-change: transform, opacity;
@@ -407,16 +407,11 @@
   opacity: 0.72;
 }
 
-.helper,
 .errorText {
   min-height: 20px;
   margin: 12px 4px 0;
   font-size: 0.78rem;
   line-height: 1.45;
-}
-
-.helper {
-  color: rgba(239, 234, 247, 0.74);
 }
 
 .errorText {
@@ -480,7 +475,7 @@
 
   .localBoov {
     width: 148px;
-    left: -12px;
+    left: -28px;
   }
 
   .flipCardMotion {
@@ -502,7 +497,7 @@
   }
 
   .headline {
-    font-size: clamp(1.78rem, 9.1vw, 2.65rem);
+    font-size: 1.9rem;
     line-height: 0.98;
   }
 
@@ -557,7 +552,6 @@
     width: 100%;
   }
 
-  .helper,
   .errorText {
     text-align: center;
   }

@@ -257,7 +257,7 @@ export function CtaWaitlist() {
                               if (error) setError(false);
                             }}
                             aria-invalid={error}
-                            aria-describedby={error ? "waitlist-error" : "waitlist-helper"}
+                            aria-describedby={error ? "waitlist-error" : undefined}
                           />
                           {/* Boov is the submit control: once the handed-off
                               card settles ("ready"), he crawls across the field
@@ -270,7 +270,7 @@ export function CtaWaitlist() {
                             size={52}
                           />
                         </div>
-                        <AnimatePresence initial={false} mode="wait">
+                        <AnimatePresence initial={false}>
                           {error ? (
                             <motion.p
                               id="waitlist-error"
@@ -283,11 +283,7 @@ export function CtaWaitlist() {
                             >
                               Enter a valid email address.
                             </motion.p>
-                          ) : (
-                            <motion.p id="waitlist-helper" key="helper" className={styles.helper}>
-                              {CTA_COPY.helper}
-                            </motion.p>
-                          )}
+                          ) : null}
                         </AnimatePresence>
                       </motion.form>
                     )}
