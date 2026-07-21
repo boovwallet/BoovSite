@@ -6,7 +6,7 @@
   --boov-light-lavender: #ddd4f7;
   --boov-cream: #fff8f2;
   overflow: clip;
-  background: var(--boov-deep-navy);
+  background: transparent;
   color: var(--boov-purple);
   font-family: var(--font-space-grotesk), system-ui, sans-serif;
 }
@@ -48,7 +48,20 @@
   background: repeating-linear-gradient(112deg, rgba(91, 58, 140, 0.018) 0 1px, transparent 1px 4px);
 }
 
-.hero h1 {
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.heroWord {
+  display: flex;
   margin: 0;
   color: var(--boov-purple);
   font-family: var(--font-sniglet), system-ui, sans-serif;
@@ -56,9 +69,22 @@
   font-weight: 800;
   line-height: 0.78;
   letter-spacing: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 
-.hero p {
+.heroLetter {
+  display: inline-block;
+  overflow: hidden;
+  padding: 0 0.01em;
+}
+
+.heroLetterInner {
+  display: inline-block;
+  will-change: transform;
+}
+
+.heroTagline {
   max-width: 720px;
   margin: 44px 0 0;
   color: rgba(91, 58, 140, 0.88);
@@ -66,6 +92,49 @@
   font-weight: 600;
   letter-spacing: 0.23em;
   line-height: 1.7;
+}
+
+.heroCue {
+  position: absolute;
+  bottom: 92px;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: rgba(91, 58, 140, 0.66);
+  font-family: var(--font-poppins), system-ui, sans-serif;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  transform: translateX(-50%);
+}
+
+.heroCue i {
+  position: relative;
+  width: 1px;
+  height: 46px;
+  overflow: hidden;
+  background: rgba(91, 58, 140, 0.24);
+}
+
+.heroCue i::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--boov-purple);
+  animation: cue-slide 1.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+@keyframes cue-slide {
+  0% {
+    transform: translateY(-100%);
+  }
+  60%,
+  100% {
+    transform: translateY(100%);
+  }
 }
 
 .heroTransition {
@@ -81,7 +150,7 @@
   position: relative;
   height: 260vh;
   min-height: 1500px;
-  background: var(--boov-deep-navy);
+  background: transparent;
 }
 
 .stickyStage {
@@ -94,7 +163,7 @@
   place-items: center;
   overflow: hidden;
   background:
-    linear-gradient(180deg, #080e25 0%, #05091a 52%, #030612 100%);
+    radial-gradient(120% 80% at 50% 40%, rgba(8, 14, 37, 0.5) 0%, rgba(5, 9, 26, 0.82) 55%, rgba(3, 6, 18, 0.95) 100%);
 }
 
 .spotlightBeam {
@@ -435,8 +504,71 @@
   background: linear-gradient(118deg, transparent 40%, rgba(255, 255, 255, 0.07) 50%, transparent 60%);
 }
 
+.flowRailWrap {
+  position: absolute;
+  z-index: 5;
+  bottom: 6vh;
+  left: 50%;
+  display: flex;
+  width: min(680px, 88vw);
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.flowRail {
+  display: flex;
+  gap: clamp(20px, 5vw, 52px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.flowStep {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  opacity: 0.32;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.flowStepActive {
+  opacity: 1;
+}
+
+.flowIndex {
+  color: var(--boov-lavender);
+  font-family: var(--font-poppins), system-ui, sans-serif;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+}
+
+.flowLabel {
+  color: var(--boov-light-lavender);
+  font-family: var(--font-poppins), system-ui, sans-serif;
+  font-size: 0.94rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+.flowStepActive .flowIndex {
+  color: #fff;
+}
+
+.flowDesc {
+  min-height: 3.2em;
+  max-width: 44ch;
+  margin: 0;
+  color: rgba(221, 212, 247, 0.74);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
 @media (max-width: 1050px) {
-  .hero h1 {
+  .heroWord {
     font-size: 13rem;
   }
 
@@ -450,15 +582,19 @@
     padding: 32px 18px 70px;
   }
 
-  .hero h1 {
+  .heroWord {
     font-size: 7.5rem;
   }
 
-  .hero p {
+  .heroTagline {
     max-width: 330px;
     margin-top: 32px;
     font-size: 0.7rem;
     letter-spacing: 0.18em;
+  }
+
+  .heroCue {
+    bottom: 60px;
   }
 
   .cardScene {
@@ -507,8 +643,32 @@
   }
 }
 
+@media (max-width: 700px) {
+  .flowRailWrap {
+    bottom: 4vh;
+    gap: 12px;
+  }
+
+  .flowRail {
+    gap: 16px;
+  }
+
+  .flowIndex {
+    display: none;
+  }
+
+  .flowLabel {
+    font-size: 0.8rem;
+  }
+
+  .flowDesc {
+    min-height: 4.5em;
+    font-size: 0.8rem;
+  }
+}
+
 @media (max-width: 390px) {
-  .hero h1 {
+  .heroWord {
     font-size: 5.8rem;
   }
 

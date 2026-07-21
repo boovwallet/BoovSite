@@ -11,6 +11,24 @@
   --paper-2: #ffffff;
   --rule: #ddd4f7;
   --muted: #6b6380;
+
+  /* Boov brand palette (also used in CSS modules) */
+  --boov-purple: #5b3a8c;
+  --boov-navy: #0b132b;
+  --boov-deep-navy: #05091a;
+  --boov-lavender: #b8a7e8;
+  --boov-light-lavender: #ddd4f7;
+  --boov-cream: #fff8f2;
+
+  /* Warm blueprint surface (oryzo-flavoured) */
+  --bone: #f2eee5;
+  --bone-2: #fbf7f0;
+  --sand: #e9e3d6;
+  --ink-warm: #221b30;
+  --ink-warm-soft: #4a4258;
+  --sage: #8a9a7b;
+  --tech-ink: rgba(34, 27, 48, 0.6);
+  --tech-line: rgba(91, 58, 140, 0.3);
 }
 
 * {
@@ -39,13 +57,19 @@ html {
 
 body {
   margin: 0;
-  background: var(--paper);
-  color: var(--ink);
+  background: var(--bone, #f2eee5);
+  color: var(--ink-warm, #221b30);
   font-family: var(--font-space-grotesk), system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.65;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Content sits above the fixed WebGL canvas. */
+.page-content {
+  position: relative;
+  z-index: 1;
 }
 
 ::selection {
@@ -66,6 +90,11 @@ h4 {
   font-weight: 600;
   line-height: 1.15;
   letter-spacing: 0;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
 }
 
 h1 {
@@ -81,161 +110,29 @@ a {
   text-decoration: none;
 }
 
-.section-label {
-  color: var(--accent-deep);
-  font-family: var(--font-jetbrains), ui-monospace, monospace;
-  font-size: 0.76rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+/* Global reactive WebGL background (behind everything below the hero). */
+.boov-fluid,
+.boov-fluid-fallback {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
 }
 
-.dark-section .section-label {
-  color: var(--accent);
+.boov-fluid canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
 }
 
-.dropcap::first-letter {
-  color: var(--accent-deep);
-  float: left;
-  font-family: var(--font-fraunces), Georgia, serif;
-  font-size: 4.7rem;
-  font-weight: 600;
-  line-height: 0.78;
-  margin: 0.12rem 0.65rem 0 0;
+.boov-fluid-fallback {
+  background:
+    radial-gradient(120% 120% at 20% 0%, #fbf7f0 0%, #f2eee5 45%, #e9e3d6 100%);
 }
 
-.article-columns {
-  column-gap: 3rem;
+/* Hide the OS cursor only when the custom cursor is active. */
+html.has-custom-cursor,
+html.has-custom-cursor * {
+  cursor: none;
 }
 
-.article-columns p,
-.reflection-prose p {
-  break-inside: avoid;
-}
-
-.print-only {
-  display: none;
-}
-
-@media print {
-  @page {
-    size: A4;
-    margin: 14mm;
-  }
-
-  html,
-  body {
-    background: #ffffff !important;
-    color: #111827 !important;
-    font-size: 10.5pt;
-    line-height: 1.45;
-  }
-
-  .site-nav,
-  .no-print,
-  .mobile-sheet,
-  iframe,
-  video,
-  .video-wrap,
-  .thumbnail-strip {
-    display: none !important;
-  }
-
-  .print-only {
-    display: block !important;
-  }
-
-  .reveal-on-scroll {
-    opacity: 1 !important;
-    transform: none !important;
-  }
-
-  header,
-  section,
-  footer {
-    background: #ffffff !important;
-    color: #111827 !important;
-    border: 0 !important;
-    box-shadow: none !important;
-    min-height: auto !important;
-  }
-
-  header {
-    break-after: page;
-  }
-
-  header > div {
-    display: block !important;
-    min-height: auto !important;
-  }
-
-  header *,
-  footer * {
-    color: #111827 !important;
-  }
-
-  header svg,
-  .hero-accent,
-  .hero-actions {
-    display: none !important;
-  }
-
-  header > div,
-  section > div,
-  footer > div {
-    max-width: none !important;
-    padding: 0 !important;
-  }
-
-  section {
-    break-before: page;
-    padding: 0 !important;
-  }
-
-  #about {
-    break-before: page;
-  }
-
-  #abstract article {
-    break-inside: avoid;
-  }
-
-  .print-avoid,
-  article,
-  li,
-  .resume-entry {
-    break-inside: avoid;
-  }
-
-  .dark-section * {
-    color: #111827 !important;
-  }
-
-  .section-label {
-    color: #0f766e !important;
-    margin-bottom: 10pt !important;
-  }
-
-  h1 {
-    font-size: 34pt !important;
-  }
-
-  h2 {
-    font-size: 22pt !important;
-  }
-
-  h3 {
-    font-size: 14pt !important;
-  }
-
-  .article-columns {
-    column-count: 1 !important;
-  }
-
-  a[href^="http"]::after,
-  a[href$=".pdf"]::after {
-    content: " (" attr(href) ")";
-    color: #4b5563;
-    font-size: 8pt;
-  }
-}

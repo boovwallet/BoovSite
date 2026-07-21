@@ -18,9 +18,9 @@ const config: Config = {
         muted: "var(--muted)",
       },
       fontFamily: {
-        serif: ["var(--font-fraunces)", "Georgia", "serif"],
-        sans: ["var(--font-inter)", "Inter", "system-ui", "sans-serif"],
-        mono: ["var(--font-jetbrains)", "ui-monospace", "monospace"],
+        display: ["var(--font-sniglet)", "system-ui", "sans-serif"],
+        sans: ["var(--font-space-grotesk)", "system-ui", "sans-serif"],
+        label: ["var(--font-poppins)", "system-ui", "sans-serif"],
       },
       boxShadow: {
         lift: "0 18px 48px rgba(11, 27, 43, 0.10)",
