@@ -48,7 +48,7 @@
   padding: clamp(20px, 2.4vw, 30px);
   border: 1px dashed rgba(91, 58, 140, 0.32);
   border-radius: 16px;
-  background: rgba(251, 247, 240, 0.42);
+  background: var(--card-wash);
   backdrop-filter: blur(2px);
 }
 
@@ -73,7 +73,7 @@
   padding: clamp(24px, 3vw, 38px);
   border: 1px dashed rgba(91, 58, 140, 0.32);
   border-radius: 18px;
-  background: rgba(251, 247, 240, 0.42);
+  background: var(--card-wash);
   backdrop-filter: blur(2px);
 }
 
@@ -153,7 +153,7 @@
 }
 
 .feedCard {
-  color: rgba(74, 66, 88, 0.7);
+  color: color-mix(in srgb, var(--ink-warm-soft) 70%, transparent);
   font-family: var(--font-poppins), system-ui, sans-serif;
   font-size: 0.78rem;
   letter-spacing: 0.06em;
@@ -166,7 +166,7 @@
 }
 
 .feedTime {
-  color: rgba(74, 66, 88, 0.7);
+  color: color-mix(in srgb, var(--ink-warm-soft) 70%, transparent);
   font-size: 0.8rem;
   text-align: right;
 }

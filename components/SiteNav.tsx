@@ -1,8 +1,11 @@
 "use client";
 
+import { Link } from "next-view-transitions";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { NAV_LINKS } from "@/content/homepage";
 import { useMagnetic } from "@/lib/hooks/useMagnetic";
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import styles from "./SiteNav.module.css";
 
 function OrbitMark() {
@@ -17,6 +20,8 @@ function OrbitMark() {
 
 export function SiteNav() {
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
+  // Link renders an <a>, so the magnetic ref type holds.
   const ctaRef = useMagnetic<HTMLAnchorElement>();
 
   useEffect(() => {
@@ -29,24 +34,34 @@ export function SiteNav() {
   }, []);
 
   return (
-    <header className={`${styles.nav} ${scrolled ? styles.scrolled : ""}`}>
+    <header className={`${styles.nav} vt-nav ${scrolled ? styles.scrolled : ""}`}>
       <div className={styles.inner}>
-        <a href="#top" className={styles.brand} aria-label="Boov home">
+        <Link href="/" className={styles.brand} aria-label="Boov home">
           <OrbitMark />
           <span>boov</span>
-        </a>
+        </Link>
 
         <nav className={styles.links} aria-label="Primary">
           {NAV_LINKS.map((link) => (
-            <a key={link.href} href={link.href} className={styles.link}>
+            <Link
+              key={link.href}
+              href={link.href}
+              className={styles.link}
+              aria-current={pathname === link.href ? "page" : undefined}
+            >
               {link.label}
-            </a>
+            </Link>
           ))}
         </nav>
 
-        <a ref={ctaRef} href="#join" className={styles.cta} data-cursor data-cursor-label="Join">
-          Join waitlist
-        </a>
+        <div className={styles.actions}>
+          {/* No static aria-label here — the toggler labels itself dynamically
+              ("Switch to dark/light theme"). */}
+          <AnimatedThemeToggler className={styles.theme} data-cursor data-cursor-label="Theme" />
+          <Link ref={ctaRef} href="/story#join" className={styles.cta} data-cursor data-cursor-label="Join">
+            Join waitlist
+          </Link>
+        </div>
       </div>
     </header>
   );

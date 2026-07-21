@@ -111,10 +111,10 @@ export const LIVE_FEED_SAMPLE: FeedItem[] = [
 ];
 
 export const NAV_LINKS = [
-  { label: "Product", href: "#tap-to-pay" },
-  { label: "Spending controls", href: "#controls" },
-  { label: "Mission", href: "#mission" },
-  { label: "Impact", href: "#impact" },
+  { label: "Home", href: "/" },
+  { label: "Story", href: "/story" },
+  { label: "Alerts", href: "/alerts" },
+  { label: "The Lab", href: "/play" },
 ] as const;
 
 export const CTA_COPY = {

@@ -1,16 +1,41 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import styles from "./TechnicalOverlay.module.css";
 
-const SECTIONS: { id: string; label: string }[] = [
-  { id: "top", label: "00 — INDEX" },
-  { id: "tap-to-pay", label: "01 — THE CARD" },
-  { id: "controls", label: "02 — CONTROLS" },
-  { id: "mission", label: "03 — MANIFESTO" },
-  { id: "impact", label: "04 — IMPACT" },
-  { id: "join", label: "05 — JOIN" },
-];
+type Section = { id: string; label: string };
+
+// Route number = nav order (01 home … 04 lab); letters index sections within a
+// route. Keeps the read-out honest on every page instead of silently sticking
+// to the homepage table.
+const SECTION_MAP: Record<string, Section[]> = {
+  "/": [
+    { id: "top", label: "01 — INDEX" },
+    { id: "tap-to-pay", label: "01A — THE CARD" },
+  ],
+  "/story": [
+    { id: "controls", label: "02A — CONTROLS" },
+    { id: "mission", label: "02B — MANIFESTO" },
+    { id: "impact", label: "02C — IMPACT" },
+    { id: "join", label: "02D — JOIN" },
+  ],
+  "/alerts": [{ id: "alerts", label: "03 — ALERTS" }],
+  "/play": [
+    { id: "exp-01", label: "04A — SPRING" },
+    { id: "exp-02", label: "04B — GSAP" },
+    { id: "exp-03", label: "04C — MOTION" },
+    { id: "exp-04", label: "04D — MAGIC UI" },
+  ],
+};
+
+function sectionsForPath(pathname: string): Section[] {
+  return (
+    SECTION_MAP[pathname] ?? [
+      { id: "top", label: `?? — ${pathname.replace("/", "").toUpperCase() || "INDEX"}` },
+    ]
+  );
+}
 
 /**
  * Blueprint framing layer (oryzo-style): a fixed dashed frame, corner ticks,
@@ -20,9 +45,14 @@ const SECTIONS: { id: string; label: string }[] = [
 export function TechnicalOverlay() {
   const pctRef = useRef<HTMLSpanElement>(null);
   const coordRef = useRef<HTMLSpanElement>(null);
-  const [section, setSection] = useState(SECTIONS[0].label);
+  const pathname = usePathname();
+  const sections = sectionsForPath(pathname);
+  const [section, setSection] = useState(sections[0].label);
 
   useEffect(() => {
+    const routeSections = sectionsForPath(pathname);
+    setSection(routeSections[0].label);
+
     let raf = 0;
     const onScroll = () => {
       if (raf) return;
@@ -34,8 +64,8 @@ export function TechnicalOverlay() {
 
         // active section = last one whose top has passed the viewport middle
         const mid = window.innerHeight * 0.5;
-        let current = SECTIONS[0].label;
-        for (const s of SECTIONS) {
+        let current = routeSections[0].label;
+        for (const s of routeSections) {
           const el = document.getElementById(s.id);
           if (!el) continue;
           if (el.getBoundingClientRect().top <= mid) current = s.label;
@@ -57,7 +87,7 @@ export function TechnicalOverlay() {
       window.removeEventListener("mousemove", onMove);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [pathname]);
 
   return (
     <div className={styles.root} aria-hidden="true">

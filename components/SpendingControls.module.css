@@ -54,12 +54,12 @@
   padding: clamp(24px, 3vw, 38px);
   border: 1px dashed rgba(91, 58, 140, 0.34);
   border-radius: 18px;
-  background: rgba(251, 247, 240, 0.42);
+  background: var(--card-wash);
   backdrop-filter: blur(2px);
 }
 
 .columnBlocked {
-  background: rgba(233, 227, 214, 0.36);
+  background: var(--card-wash-blocked, rgba(233, 227, 214, 0.36));
 }
 
 .divider {
@@ -115,7 +115,7 @@
 .rowMarkBlocked {
   width: 12px;
   height: 1px;
-  background: rgba(74, 66, 88, 0.5);
+  background: color-mix(in srgb, var(--ink-warm-soft) 50%, transparent);
   transform: translateY(0.55em);
 }
 
@@ -128,9 +128,9 @@
 }
 
 .rowBlocked .rowLabel {
-  color: rgba(74, 66, 88, 0.55);
+  color: color-mix(in srgb, var(--ink-warm-soft) 55%, transparent);
   text-decoration: line-through;
-  text-decoration-color: rgba(74, 66, 88, 0.3);
+  text-decoration-color: color-mix(in srgb, var(--ink-warm-soft) 30%, transparent);
 }
 
 .rowNote {

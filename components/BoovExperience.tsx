@@ -1,7 +1,7 @@
 "use client";
 
 import { useGSAP } from "@gsap/react";
-import { motion, useMotionValueEvent, useReducedMotion, useScroll, useTransform, type MotionValue } from "framer-motion";
+import { motion, useMotionTemplate, useMotionValueEvent, useReducedMotion, useScroll, useTransform, type MotionStyle, type MotionValue } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { FLOW_STEPS } from "@/content/homepage";
 import { gsap } from "@/lib/gsap";
@@ -309,7 +309,32 @@ export function BoovExperience() {
     return -89 + ((progress - 0.5) / 0.5) * 95;
   });
   const titleOpacity = useTransform(scrollYProgress, [0, 0.13, 0.4, 0.78, 1], [0.12, 0.72, 0.3, 0.7, 0.28]);
-  const spotlightOpacity = useTransform(scrollYProgress, [0, 0.16, 0.5, 1], [0.2, 0.8, 1, 0.72]);
+
+  // The stage starts dark and the spotlight builds the whole way down, rather
+  // than peaking mid-scroll and fading out. The beam grows from its source
+  // (transform-origin top) so it reads as light sweeping in, not a box scaling.
+  const spotlightOpacity = useTransform(scrollYProgress, [0, 0.1, 0.4, 1], [0, 0.5, 0.85, 1]);
+  const spotlightScaleY = useTransform(scrollYProgress, [0, 0.35, 1], [0.72, 0.95, 1.06]);
+  const spotlightScaleX = useTransform(scrollYProgress, [0, 0.5, 1], [0.84, 1, 1.05]);
+  // How far down the cone the light has travelled — this makes the beam arrive
+  // rather than appear. Range retuned for the rebuilt stage geometry (the beam
+  // now starts at top:-10%, so its head stops sit higher in the element).
+  const beamRevealPct = useTransform(scrollYProgress, [0, 0.6], [40, 140], { clamp: true });
+  // The pool only lands once the beam has nearly reached the floor.
+  const poolOpacity = useTransform(scrollYProgress, [0, 0.3, 0.62, 1], [0, 0.12, 0.72, 1]);
+  const poolScale = useTransform(scrollYProgress, [0, 0.62, 1], [0.62, 0.96, 1.08]);
+  // Edges close in as the beam brightens. Floor raised from the pre-rebuild
+  // 0.32: the stage is now translucent over the warm WebGL wash, and the scene
+  // should open dark.
+  const vignetteOpacity = useTransform(scrollYProgress, [0, 0.3, 1], [0.5, 0.75, 1]);
+
+  // Built as motion templates rather than individual x/scale props: mixing
+  // static numbers with motion values makes framer diff and tween them, which
+  // lags the scroll instead of tracking it — and framer's own transform would
+  // silently drop the CSS centring these elements rely on.
+  const beamTransform = useMotionTemplate`translateX(-50%) scaleX(${spotlightScaleX}) scaleY(${spotlightScaleY})`;
+  const poolTransform = useMotionTemplate`translate(-50%, -50%) rotateX(64deg) scale(${poolScale})`;
+  const beamReveal = useMotionTemplate`${beamRevealPct}%`;
 
   useMotionValueEvent(scrollYProgress, "change", (progress) => {
     const nextShowBack = progress >= 0.5;
@@ -332,9 +357,39 @@ export function BoovExperience() {
 
       <section id="tap-to-pay" ref={cardSceneRef} className={styles.cardScene} aria-labelledby="tap-heading">
         <div className={styles.stickyStage}>
-          <motion.div className={styles.spotlightBeam} style={{ opacity: prefersReducedMotion ? 0.9 : spotlightOpacity }} aria-hidden="true" />
-          <div className={styles.spotlightPool} aria-hidden="true" />
-          <div className={styles.stageVignette} aria-hidden="true" />
+          <motion.div
+            className={styles.spotlightBeam}
+            style={
+              // Cast: MotionStyle has no index signature for CSS custom
+              // properties, but framer applies them fine at runtime.
+              (prefersReducedMotion
+                ? { opacity: 0.9 }
+                : {
+                    opacity: spotlightOpacity,
+                    transform: beamTransform,
+                    transformOrigin: "50% 0%",
+                    "--beam-reveal": beamReveal,
+                  }) as MotionStyle
+            }
+            transition={{ duration: 0 }}
+            aria-hidden="true"
+          />
+          <motion.div
+            className={styles.spotlightPool}
+            style={
+              prefersReducedMotion
+                ? { opacity: 0.85 }
+                : { opacity: poolOpacity, transform: poolTransform }
+            }
+            transition={{ duration: 0 }}
+            aria-hidden="true"
+          />
+          <motion.div
+            className={styles.stageVignette}
+            style={{ opacity: prefersReducedMotion ? 0.85 : vignetteOpacity }}
+            transition={{ duration: 0 }}
+            aria-hidden="true"
+          />
 
           <motion.div className={styles.stageTitle} style={{ opacity: prefersReducedMotion ? 0.42 : titleOpacity }}>
             <p>BOOV ESSENTIALS</p>

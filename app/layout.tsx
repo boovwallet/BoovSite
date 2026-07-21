@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
 import { Poppins, Sniglet, Space_Grotesk } from "next/font/google";
+import { ViewTransitions } from "next-view-transitions";
+import { AppShell } from "@/components/AppShell";
+import { SiteFooter } from "@/components/SiteFooter";
+import { SiteNav } from "@/components/SiteNav";
 import "./globals.css";
 
 const sniglet = Sniglet({
@@ -54,10 +58,27 @@ export const metadata: Metadata = {
   },
 };
 
+// Applied before hydration so a stored dark preference never flashes light.
+const themeScript = `try{if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}`;
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${sniglet.variable} ${poppins.variable} ${spaceGrotesk.variable}`}>
-      <body>{children}</body>
-    </html>
+    <ViewTransitions>
+      <html lang="en" className={`${sniglet.variable} ${poppins.variable} ${spaceGrotesk.variable}`}>
+        <head>
+          <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        </head>
+        <body>
+          {/* Site chrome lives here so nav, cursor, WebGL background, Lenis and
+              the preloader persist across route changes instead of remounting. */}
+          <SiteNav />
+          <div id="top" />
+          <AppShell>
+            {children}
+            <SiteFooter />
+          </AppShell>
+        </body>
+      </html>
+    </ViewTransitions>
   );
 }

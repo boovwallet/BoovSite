@@ -25,6 +25,39 @@
   text-align: center;
 }
 
+/* .experience re-declares the brand tokens locally (the card scene needs the
+   canonical values), which would otherwise pin the hero light forever — so the
+   dark flip is restated here at higher specificity. The pastel wash dims to an
+   aurora instead of painting its light gradients over the dark surface. */
+:global(html.dark) .experience {
+  --boov-purple: #c9b8f0;
+  --boov-cream: #171226;
+}
+
+:global(html.dark) .pastelWash {
+  opacity: 0.16;
+}
+
+:global(html.dark) .hero p {
+  color: rgba(201, 184, 240, 0.85);
+}
+
+:global(html.dark) .heroTagline {
+  color: rgba(201, 184, 240, 0.85);
+}
+
+:global(html.dark) .heroCue {
+  color: rgba(201, 184, 240, 0.6);
+}
+
+:global(html.dark) .heroCue i {
+  background: rgba(201, 184, 240, 0.24);
+}
+
+:global(html.dark) .heroCue i::after {
+  background: #c9b8f0;
+}
+
 .pastelWash {
   position: absolute;
   z-index: -2;
@@ -176,6 +209,27 @@
   background: linear-gradient(180deg, rgba(231, 224, 255, 0.78), rgba(184, 167, 232, 0.28) 55%, rgba(184, 167, 232, 0));
   clip-path: polygon(43% 0, 57% 0, 92% 100%, 8% 100%);
   filter: blur(38px);
+  /* --beam-reveal is driven from scroll: it is the point the beam has reached
+     on its way down, with a soft trailing edge below it, so the light travels
+     from the source to the floor instead of the whole cone appearing at once.
+     Stops stay ascending because the value never goes below 40%. */
+  --beam-reveal: 140%;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0 14%,
+    rgba(0, 0, 0, 0.28) 24%,
+    #000 40%,
+    #000 var(--beam-reveal),
+    transparent calc(var(--beam-reveal) + 18%)
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0 14%,
+    rgba(0, 0, 0, 0.28) 24%,
+    #000 40%,
+    #000 var(--beam-reveal),
+    transparent calc(var(--beam-reveal) + 18%)
+  );
   transform: translateX(-50%);
 }
 
