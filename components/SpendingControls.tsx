@@ -46,13 +46,6 @@ type Transaction = {
 
 type GuidePhase = "prompt" | "result" | "travelling" | "complete";
 
-/** Where his centre sits while he grips the left edge of the screen. */
-const WALL_EDGE_INSET = 62;
-/** Approach progress at which he stops crawling the wall and is handed to the dock. */
-const HANDOFF_START = 0.72;
-
-const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
-
 const TRANSACTIONS: Transaction[] = [
   {
     id: "groceries",
@@ -180,7 +173,6 @@ function MemberCard({
 
 export function SpendingControls() {
   const sectionRef = useRef<HTMLElement>(null);
-  const mascotRef = useRef<HTMLButtonElement>(null);
   const prefersReducedMotion = Boolean(useReducedMotion());
   const [activeStep, setActiveStep] = useState(prefersReducedMotion ? 3 : 0);
   const [transactionId, setTransactionId] = useState<Transaction["id"]>("groceries");
@@ -221,51 +213,20 @@ export function SpendingControls() {
     target: sectionRef,
     offset: ["start end", "start start"],
   });
-  // Driven raw: Lenis already smooths the scroll, and an extra spring on top
-  // lags the crawl visibly behind the wheel.
-  // The arrival is authored in screen space and converted to a delta from his
-  // natural slot every frame. Measuring live matters twice over: a mount-time
-  // measurement lands before the dock has laid out, and the dock is itself
-  // rising up the viewport during the approach — so a fixed offset would drift
-  // him off the wall and make the descent non-monotonic.
-  const naturalCentre = () => {
-    const button = mascotRef.current;
-    if (!button) return null;
-    const rect = button.getBoundingClientRect();
-    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, h: rect.height };
-  };
-
-  // rotate(90deg) maps the feet vector to the left, so he grips the left wall
-  // on the way down and unwinds as he rounds the corner onto the tab row.
-  const arrivalRotate = useTransform(approachProgress, [0, HANDOFF_START, 0.92, 1], [90, 90, 24, 0]);
-  const arrivalOpacity = useTransform(approachProgress, [0, 0.04, 1], [0, 1, 1]);
-
-  // How much of the way he has been handed back to his real slot. Kept at 0
-  // for the descent so the path is authored purely in viewport space — his
-  // natural slot sits thousands of pixels below the fold early in the
-  // approach, so steering toward it would fling him around.
-  const handoff = (progress: number) =>
-    progress <= HANDOFF_START ? 0 : Math.min(1, (progress - HANDOFF_START) / (1 - HANDOFF_START));
-
-  // Hugs the screen edge through the descent, then eases across to the slot.
-  const arrivalX = useTransform(approachProgress, (progress) => {
-    const centre = naturalCentre();
-    if (!centre) return 0;
-    const wall = WALL_EDGE_INSET;
-    const target = wall + (centre.x - wall) * easeOutCubic(handoff(progress));
-    return target - centre.x;
+  const smoothApproach = useSpring(approachProgress, {
+    stiffness: 170,
+    damping: 32,
+    mass: 0.28,
+    restDelta: 0.001,
   });
 
-  // Falls from just above the top edge to the floor of the stage, then is
-  // handed to the dock over the same window the horizontal move uses.
-  const arrivalY = useTransform(approachProgress, (progress) => {
-    const centre = naturalCentre();
-    if (!centre) return 0;
-    const floor = window.innerHeight * 0.82;
-    const descent = -centre.h + (floor + centre.h) * Math.min(1, progress / HANDOFF_START);
-    const target = descent + (centre.y - descent) * easeOutCubic(handoff(progress));
-    return target - centre.y;
-  });
+  // He sweeps in from the side and swings down into the slot. rotate(90deg)
+  // maps the feet vector to the left, so he comes in on his side and unwinds
+  // as he settles onto the tab row.
+  const arrivalRotate = useTransform(smoothApproach, [0, 0.52, 0.8, 1], [90, 90, 26, 0]);
+  const arrivalX = useTransform(smoothApproach, [0, 0.52, 0.82, 1], ["-42vw", "-40vw", "-19vw", "0vw"]);
+  const arrivalY = useTransform(smoothApproach, [0, 0.5, 0.8, 1], ["-64vh", "-13vh", "0vh", "0vh"]);
+  const arrivalOpacity = useTransform(smoothApproach, [0, 0.05, 1], [0, 1, 1]);
   const fieldOpacity = useTransform(
     smoothProgress,
     [0, 0.08, 0.9, 1],
@@ -288,7 +249,7 @@ export function SpendingControls() {
   // look right without the latch: every arrival transform converges to
   // identity at progress 1.)
   const seenApproach = useRef(false);
-  useMotionValueEvent(approachProgress, "change", (latest) => {
+  useMotionValueEvent(smoothApproach, "change", (latest) => {
     if (latest < 0.85) {
       seenApproach.current = true;
       return;
@@ -549,7 +510,6 @@ export function SpendingControls() {
 
           <div className={styles.guideDock}>
             <motion.button
-              ref={mascotRef}
               type="button"
               className={styles.guideMascot}
               data-position={guidePosition}
