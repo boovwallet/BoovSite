@@ -165,6 +165,18 @@ html.has-custom-cursor * {
   cursor: none;
 }
 
+/* The authorization story uses normal controls and suppresses the decorative
+   site cursor while its sticky chapter is centered in the viewport. */
+html.has-custom-cursor[data-controls-active="true"],
+html.has-custom-cursor[data-controls-active="true"] * {
+  cursor: auto;
+}
+
+html.has-custom-cursor[data-controls-active="true"] button,
+html.has-custom-cursor[data-controls-active="true"] [role="tab"] {
+  cursor: pointer;
+}
+
 /* ---------- View transitions ----------------------------------------- */
 
 /* Route navigations (next-view-transitions): the old page fades out; the
@@ -220,4 +232,3 @@ html[data-magicui-theme-vt="active"]::view-transition-new(root) {
     animation: none !important;
   }
 }
-

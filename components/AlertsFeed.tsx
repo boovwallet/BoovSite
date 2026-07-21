@@ -2,7 +2,13 @@
 
 import Image from "next/image";
 import { Activity, BatteryFull, Bell, Heart, Home, Pause, Play, Wifi } from "lucide-react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { ALERTS, type AlertItem } from "@/content/alerts";
 import { useScrollReveal } from "@/lib/hooks/useScrollReveal";
@@ -49,6 +55,18 @@ export function AlertsFeed() {
   const [shown, setShown] = useState(1);
   const [paused, setPaused] = useState(false);
   const [isInView, setIsInView] = useState(false);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+  const exitOpacity = useTransform(scrollYProgress, [0.7, 0.9, 1], [1, 0.78, 0]);
+  const exitScale = useTransform(scrollYProgress, [0.7, 1], [1, 0.98]);
+  const exitY = useTransform(scrollYProgress, [0.7, 1], [0, -14]);
+  const exitFilter = useTransform(
+    scrollYProgress,
+    [0.7, 0.92, 1],
+    ["blur(0px)", "blur(2px)", "blur(8px)"],
+  );
 
   useScrollReveal(sectionRef, { selector: `.${styles.reveal}`, stagger: 0.08, y: 18 });
 
@@ -93,7 +111,19 @@ export function AlertsFeed() {
 
   return (
     <div ref={sectionRef} className={styles.section}>
-      <div className={styles.inner}>
+      <motion.div
+        className={styles.inner}
+        style={
+          prefersReducedMotion
+            ? undefined
+            : {
+                opacity: exitOpacity,
+                scale: exitScale,
+                y: exitY,
+                filter: exitFilter,
+              }
+        }
+      >
         <div className={styles.copy}>
           <h2 id="alerts-heading" className={`${styles.headline} ${styles.reveal}`}>
             <span>Every dollar</span>
@@ -193,7 +223,7 @@ export function AlertsFeed() {
             Illustrative activity · Names and events are fictional
           </p>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
