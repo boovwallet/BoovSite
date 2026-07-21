@@ -1,345 +1,409 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AnimatePresence,
   motion,
+  useAnimationControls,
+  useMotionValue,
   useMotionValueEvent,
   useReducedMotion,
   useScroll,
   useSpring,
   useTransform,
+  type MotionValue,
+  type Variant,
 } from "framer-motion";
 import {
-  Banknote,
-  BusFront,
   Check,
-  LockKeyhole,
+  Droplets,
+  Nfc,
   Pill,
-  Radio,
-  ReceiptText,
   ShieldCheck,
   ShoppingBasket,
-  Sparkles,
-  WashingMachine,
+  TrainFront,
   Wine,
   X,
   type LucideIcon,
 } from "lucide-react";
-import KineticGrid from "@/components/ui/kinetic-grid";
-import { useLenis } from "@/lib/SmoothScroll";
+import { TransitionPanel } from "@/components/motion-primitives/transition-panel";
+import NeuralBackground from "@/components/ui/flow-field-background";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import styles from "./SpendingControls.module.css";
 
-type ControlStep = {
-  id: string;
+type Transaction = {
+  id: "groceries" | "pharmacy" | "transit" | "hygiene" | "alcohol";
   label: string;
   merchant: string;
-  location: string;
   amount: string;
+  category: string;
   rule: string;
-  result: string;
-  tone: "allow" | "block";
+  status: "approved" | "declined";
   Icon: LucideIcon;
 };
 
-const CONTROL_STEPS: ControlStep[] = [
+const TRANSACTIONS: Transaction[] = [
   {
     id: "groceries",
     label: "Groceries",
     merchant: "9th Street Market",
-    location: "Grocery · 0.3 mi",
     amount: "$18.40",
-    rule: "Essential food merchant verified",
-    result: "Approved",
-    tone: "allow",
+    category: "Grocery stores",
+    rule: "Essential food merchant",
+    status: "approved",
     Icon: ShoppingBasket,
   },
   {
     id: "pharmacy",
     label: "Pharmacy",
-    merchant: "Community Pharmacy",
-    location: "Health · Avenue A",
-    amount: "$6.25",
-    rule: "Prescription and care category verified",
-    result: "Approved",
-    tone: "allow",
+    merchant: "Central Pharmacy",
+    amount: "$12.75",
+    category: "Pharmacies",
+    rule: "Health and pharmacy",
+    status: "approved",
     Icon: Pill,
   },
   {
     id: "transit",
     label: "Transit",
-    merchant: "M14 Select Bus",
-    location: "Transit · 8th Avenue",
-    amount: "$2.90",
-    rule: "Public transportation network verified",
-    result: "Approved",
-    tone: "allow",
-    Icon: BusFront,
-  },
-  {
-    id: "cash",
-    label: "Cash withdrawal",
-    merchant: "ATM · Bowery",
-    location: "Cash access · 0.1 mi",
-    amount: "$40.00",
-    rule: "Cash conversion is outside the essentials rail",
-    result: "Locked",
-    tone: "block",
-    Icon: Banknote,
-  },
-  {
-    id: "liquor",
-    label: "Liquor",
-    merchant: "Bottle Shop",
-    location: "Restricted retail · 1st Avenue",
-    amount: "$12.00",
-    rule: "Merchant category is restricted",
-    result: "Declined",
-    tone: "block",
-    Icon: Wine,
+    merchant: "City Transit",
+    amount: "$2.50",
+    category: "Public transit",
+    rule: "Approved transportation",
+    status: "approved",
+    Icon: TrainFront,
   },
   {
     id: "hygiene",
     label: "Hygiene",
-    merchant: "Wash & Fold",
-    location: "Laundry · 11th Street",
-    amount: "$8.75",
-    rule: "Essential hygiene service verified",
-    result: "Approved",
-    tone: "allow",
-    Icon: WashingMachine,
+    merchant: "Neighborhood Market",
+    amount: "$9.20",
+    category: "Personal care",
+    rule: "Essential hygiene",
+    status: "approved",
+    Icon: Droplets,
+  },
+  {
+    id: "alcohol",
+    label: "Alcohol",
+    merchant: "Corner Wine & Spirits",
+    amount: "$12.60",
+    category: "Alcohol retailers",
+    rule: "Blocked category: alcohol",
+    status: "declined",
+    Icon: Wine,
   },
 ];
 
+const ACCESSIBLE_STEPS = [
+  "Tap received.",
+  "Merchant recognized.",
+  "Essentials rule matched.",
+  "Purchase approved or declined.",
+] as const;
+
+const STATUS_VARIANTS: { enter: Variant; center: Variant; exit: Variant } = {
+  enter: { opacity: 0, y: 10, filter: "blur(6px)" },
+  center: { opacity: 1, y: 0, filter: "blur(0px)" },
+  exit: { opacity: 0, y: -7, filter: "blur(4px)" },
+};
+
+function CardMark() {
+  return (
+    <span className={styles.cardBrand}>
+      <span className={styles.orbitMark} aria-hidden="true"><i /></span>
+      boov
+    </span>
+  );
+}
+
+function MemberCard({
+  activeStep,
+  reducedMotion,
+  tiltX,
+  tiltY,
+}: {
+  activeStep: number;
+  reducedMotion: boolean;
+  tiltX: MotionValue<number>;
+  tiltY: MotionValue<number>;
+}) {
+  const baseY = [8, 2, -3, 0][activeStep];
+  const baseScale = [0.94, 0.97, 1, 1][activeStep];
+
+  return (
+    <motion.div
+      className={styles.card}
+      layout
+      layoutId="boov-authorization-card"
+      role="img"
+      aria-label="Navy Boov Essentials card"
+      style={{ rotateX: reducedMotion ? 0 : tiltX, rotateY: reducedMotion ? 0 : tiltY }}
+      animate={{
+        rotate: [-7, -3, 0, 0][activeStep],
+        y: reducedMotion ? baseY : [baseY - 3, baseY + 4, baseY - 3],
+        scale: baseScale,
+      }}
+      transition={{
+        rotate: { duration: reducedMotion ? 0 : 0.48, ease: [0.22, 1, 0.36, 1] },
+        scale: { duration: reducedMotion ? 0 : 0.48, ease: [0.22, 1, 0.36, 1] },
+        y: reducedMotion
+          ? { duration: 0 }
+          : { duration: 4.2, repeat: Infinity, ease: "easeInOut" },
+      }}
+    >
+      <span className={styles.cardRibbon} aria-hidden="true" />
+      <CardMark />
+      <span className={styles.cardChip} aria-hidden="true"><i /></span>
+      <span className={styles.cardDigits}>•••• 0427</span>
+      <Nfc className={styles.cardContactless} aria-hidden="true" />
+      <span className={styles.cardType}>essentials</span>
+    </motion.div>
+  );
+}
+
 export function SpendingControls() {
   const sectionRef = useRef<HTMLElement>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const lenis = useLenis();
-  const prefersReducedMotion = useReducedMotion();
-  const active = CONTROL_STEPS[activeIndex];
-  const ActiveIcon = active.Icon;
+  const prefersReducedMotion = Boolean(useReducedMotion());
+  const [activeStep, setActiveStep] = useState(prefersReducedMotion ? 3 : 0);
+  const [transactionId, setTransactionId] = useState<Transaction["id"]>("groceries");
+  const [announcement, setAnnouncement] = useState("");
+  const [fieldActive, setFieldActive] = useState(false);
+  const pointerX = useSpring(useMotionValue(0), { stiffness: 180, damping: 24, mass: 0.45 });
+  const pointerY = useSpring(useMotionValue(0), { stiffness: 180, damping: 24, mass: 0.45 });
+  const tiltY = useTransform(pointerX, [-1, 1], [-6, 6]);
+  const tiltX = useTransform(pointerY, [-1, 1], [5, -5]);
+  const burstControls = useAnimationControls();
+
+  const transaction = useMemo(
+    () => TRANSACTIONS.find((item) => item.id === transactionId) ?? TRANSACTIONS[0],
+    [transactionId],
+  );
+  const approved = transaction.status === "approved";
+  const StatusIcon = approved ? Check : X;
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"],
   });
-
   const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 180,
-    damping: 34,
-    mass: 0.24,
-    restDelta: 0.0005,
+    stiffness: 170,
+    damping: 32,
+    mass: 0.28,
+    restDelta: 0.001,
   });
+  const fieldOpacity = useTransform(
+    smoothProgress,
+    [0, 0.08, 0.9, 1],
+    [0.16, 1, 1, 0],
+  );
 
   useMotionValueEvent(smoothProgress, "change", (latest) => {
     if (prefersReducedMotion) return;
-    const nextIndex = Math.min(
-      CONTROL_STEPS.length - 1,
-      Math.round(latest * (CONTROL_STEPS.length - 1)),
-    );
-    setActiveIndex((current) => (current === nextIndex ? current : nextIndex));
+    const nextStep = Math.min(3, Math.max(0, Math.floor(latest * 4)));
+    setActiveStep((current) => (current === nextStep ? current : nextStep));
   });
 
-  const progressScale = useTransform(smoothProgress, [0, 1], [0.02, 1]);
-  const beamY = useTransform(smoothProgress, [0, 1], ["10%", "88%"]);
-  const gridY = useTransform(smoothProgress, [0, 1], ["0px", "-72px"]);
-  const cardRotate = useTransform(smoothProgress, [0, 0.24, 0.5, 0.76, 1], [-7, 5, -4, 6, -3]);
-  const cardY = useTransform(smoothProgress, [0, 0.5, 1], [12, -8, 5]);
-
-  const goToStep = (index: number) => {
-    setActiveIndex(index);
-    if (prefersReducedMotion || !sectionRef.current) return;
-
+  useEffect(() => {
     const section = sectionRef.current;
-    const range = Math.max(0, section.offsetHeight - window.innerHeight);
-    const target = section.offsetTop + (index / (CONTROL_STEPS.length - 1)) * range;
+    if (!section) return;
 
-    if (lenis) {
-      lenis.scrollTo(target, { duration: 0.72, force: true });
-    } else {
-      window.scrollTo({ top: target, behavior: "smooth" });
-    }
+    const root = document.documentElement;
+    const chromeObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) root.dataset.controlsActive = "true";
+        else delete root.dataset.controlsActive;
+      },
+      { rootMargin: "-46% 0px -46% 0px", threshold: 0 },
+    );
+    const fieldObserver = new IntersectionObserver(
+      ([entry]) => setFieldActive(entry.isIntersecting),
+      { rootMargin: "45% 0px", threshold: 0 },
+    );
+
+    chromeObserver.observe(section);
+    fieldObserver.observe(section);
+    return () => {
+      chromeObserver.disconnect();
+      fieldObserver.disconnect();
+      delete root.dataset.controlsActive;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (prefersReducedMotion) setActiveStep(3);
+  }, [prefersReducedMotion]);
+
+  const selectTransaction = (value: string) => {
+    const next = TRANSACTIONS.find((item) => item.id === value);
+    if (!next) return;
+    setTransactionId(next.id);
+    setAnnouncement(
+      `${next.merchant}, ${next.amount}. Purchase ${next.status}. ${next.rule}.`,
+    );
   };
 
-  return (
-    <section id="controls" ref={sectionRef} className={styles.section} aria-labelledby="controls-heading">
-      <div className={styles.stickyStage}>
-        <div className={styles.ambient} aria-hidden="true">
-          <motion.div className={styles.ambientGrid} style={{ y: prefersReducedMotion ? 0 : gridY }} />
-          <div className={styles.orbitOne} />
-          <div className={styles.orbitTwo} />
-        </div>
+  const updateCardTilt = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (prefersReducedMotion) return;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    pointerX.set(((event.clientX - bounds.left) / bounds.width - 0.5) * 2);
+    pointerY.set(((event.clientY - bounds.top) / bounds.height - 0.5) * 2);
+  };
 
-        <div className={styles.inner}>
-          <header className={styles.head}>
-            <div>
-              <p className={styles.kicker}>03 — What the card locks to</p>
-              <h2 id="controls-heading" className={styles.title}>
-                It reads the purchase.
-                <br />
-                {" Then decides."}
-              </h2>
-            </div>
-            <p className={styles.lead}>
-              Every tap moves through a live essentials filter before a dollar can move.
-            </p>
+  const resetCardTilt = () => {
+    pointerX.set(0);
+    pointerY.set(0);
+  };
+
+  const reactToBurst = () => {
+    if (prefersReducedMotion) return;
+    void burstControls.start({
+      scale: [1, 1.025, 1],
+      transition: { duration: 0.42, ease: [0.22, 1, 0.36, 1] },
+    });
+  };
+
+  const finalStatus = approved
+    ? `Approved · ${transaction.amount} at ${transaction.merchant}.`
+    : "Declined · Alcohol is a blocked category.";
+  const statuses = [
+    "Tap received.",
+    "Merchant recognized.",
+    "Essentials rule matched.",
+    finalStatus,
+  ];
+
+  return (
+    <section
+      id="controls"
+      ref={sectionRef}
+      className={styles.section}
+      aria-labelledby="controls-heading"
+    >
+      <div
+        className={styles.stickyStage}
+        onPointerMove={updateCardTilt}
+        onPointerLeave={resetCardTilt}
+      >
+        <motion.div className={styles.fieldLayer} style={{ opacity: prefersReducedMotion ? 0.72 : fieldOpacity }}>
+          <NeuralBackground
+            className={styles.flowField}
+            color="#b8a7e8"
+            trailOpacity={0.13}
+            particleCount={500}
+            speed={0.72}
+            active={fieldActive}
+            reducedMotion={prefersReducedMotion}
+            onPointerBurst={reactToBurst}
+          />
+        </motion.div>
+        <div className={styles.vignette} aria-hidden="true" />
+
+        <div className={styles.sceneContent}>
+          <header className={styles.copy}>
+            <h2 id="controls-heading">Every tap, checked.</h2>
+            <TransitionPanel
+              activeIndex={activeStep}
+              className={styles.statusTransition}
+              variants={prefersReducedMotion ? undefined : STATUS_VARIANTS}
+              transition={{ duration: prefersReducedMotion ? 0 : 0.42, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {statuses.map((status, index) => (
+                <p key={`${index}-${status}`} data-status={index === 3 ? transaction.status : undefined}>
+                  {index === 3 ? <StatusIcon aria-hidden="true" /> : <span aria-hidden="true">0{index + 1}</span>}
+                  {status}
+                </p>
+              ))}
+            </TransitionPanel>
           </header>
 
-          <div className={styles.console} data-tone={active.tone}>
-            <div className={styles.consoleBar}>
-              <span className={styles.consoleIdentity}>
-                <Radio size={13} aria-hidden="true" />
-                BOOV CONTROL LAYER
-              </span>
-              <span className={styles.liveState}>
-                <span aria-hidden="true" /> Live authorization
-              </span>
-              <span className={styles.sequence}>
-                {String(activeIndex + 1).padStart(2, "0")} / {String(CONTROL_STEPS.length).padStart(2, "0")}
-              </span>
-            </div>
+          <div className={styles.visual}>
+            <motion.div
+              className={styles.terminal}
+              animate={{ opacity: 1, scale: activeStep === 0 ? 0.94 : 1 }}
+              transition={{ duration: prefersReducedMotion ? 0 : 0.46, ease: [0.22, 1, 0.36, 1] }}
+              aria-hidden="true"
+            >
+              <Nfc />
+              <span>Tap</span>
+            </motion.div>
 
-            <div className={styles.consoleGrid}>
-              <nav className={styles.stepRail} aria-label="Purchase categories">
-                {CONTROL_STEPS.map((step, index) => {
-                  const StepIcon = step.Icon;
-                  return (
-                    <button
-                      key={step.id}
-                      type="button"
-                      className={styles.stepButton}
-                      data-active={index === activeIndex}
-                      data-tone={step.tone}
-                      aria-pressed={index === activeIndex}
-                      onClick={() => goToStep(index)}
-                    >
-                      <span className={styles.stepIndex}>{String(index + 1).padStart(2, "0")}</span>
-                      <StepIcon size={16} strokeWidth={1.8} aria-hidden="true" />
-                      <span>{step.label}</span>
-                    </button>
-                  );
-                })}
-              </nav>
+            <motion.span
+              className={styles.connection}
+              aria-hidden="true"
+              initial={false}
+              animate={{ opacity: activeStep >= 1 ? 1 : 0, scaleX: activeStep >= 1 ? 1 : 0.12 }}
+              transition={{ duration: prefersReducedMotion ? 0 : 0.46, ease: [0.22, 1, 0.36, 1] }}
+            ><i /></motion.span>
 
-              <div
-                className={styles.scanner}
-                role="img"
-                aria-label="Interactive grid visualizing the current purchase authorization"
-              >
-                <KineticGrid className={styles.kineticGrid} tone={active.tone}>
-                  <div className={styles.scannerLayer} aria-hidden="true">
-                    <div className={styles.scannerAxis} />
-                    <div className={styles.scannerTarget}>
-                      <span />
-                      <span />
-                      <span />
-                      <span />
-                    </div>
-                    <motion.div className={styles.scannerBeam} style={{ top: prefersReducedMotion ? "52%" : beamY }} />
+            <motion.div className={styles.cardInteraction} animate={burstControls}>
+              <MemberCard
+                activeStep={activeStep}
+                reducedMotion={prefersReducedMotion}
+                tiltX={tiltX}
+                tiltY={tiltY}
+              />
+            </motion.div>
 
-                    <motion.div
-                      className={styles.miniCard}
-                      style={{ rotate: prefersReducedMotion ? -3 : cardRotate, y: prefersReducedMotion ? 0 : cardY }}
-                    >
-                      <div className={styles.cardTopline}>
-                        <span className={styles.orbitMark}><i /></span>
-                        <span>boov</span>
-                        <Sparkles size={15} />
-                      </div>
-                      <div className={styles.cardChip} />
-                      <div className={styles.cardNumber}>•••• 0427</div>
-                      <div className={styles.cardBottom}>ESSENTIALS</div>
-                    </motion.div>
+            <AnimatePresence mode="wait" initial={false}>
+              {activeStep >= 2 ? (
+                <motion.div
+                  key={`${transaction.id}-rule`}
+                  className={styles.ruleLabel}
+                  initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: prefersReducedMotion ? 0 : 0.38, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <ShieldCheck aria-hidden="true" />
+                  <span><small>Category</small>{transaction.category}</span>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
 
-                    <AnimatePresence initial={false}>
-                      <motion.div
-                        key={active.id}
-                        className={styles.merchantPing}
-                        initial={prefersReducedMotion ? false : { opacity: 0, y: 6, scale: 0.99 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={prefersReducedMotion ? undefined : { opacity: 0, y: -4, scale: 1 }}
-                        transition={{ duration: 0.16, ease: "easeOut" }}
-                      >
-                        <ActiveIcon size={17} aria-hidden="true" />
-                        <span>{active.merchant}</span>
-                        <strong>{active.amount}</strong>
-                      </motion.div>
-                    </AnimatePresence>
-                  </div>
-                </KineticGrid>
-              </div>
-
-              <div className={styles.decision} aria-live="polite">
-                <AnimatePresence initial={false}>
-                  <motion.div
-                    key={active.id}
-                    className={styles.decisionInner}
-                    initial={prefersReducedMotion ? false : { opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={prefersReducedMotion ? undefined : { opacity: 0, y: -4 }}
-                    transition={{ duration: 0.18, ease: "easeOut" }}
-                  >
-                    <div className={styles.resultTopline}>
-                      <span className={styles.resultIcon} data-tone={active.tone}>
-                        {active.tone === "allow" ? <Check size={19} /> : <X size={19} />}
-                      </span>
-                      <span className={styles.resultLabel}>{active.result}</span>
-                      <strong>{active.amount}</strong>
-                    </div>
-
-                    <div className={styles.merchantDetail}>
-                      <span>{active.label}</span>
-                      <h3>{active.merchant}</h3>
-                      <p>{active.location}</p>
-                    </div>
-
-                    <div className={styles.trace}>
-                      <div data-complete="true">
-                        <span><Radio size={13} /></span>
-                        <p><small>01 · Tap read</small>Card and merchant recognized</p>
-                      </div>
-                      <div data-complete="true">
-                        <span><ShieldCheck size={13} /></span>
-                        <p><small>02 · Rule match</small>{active.rule}</p>
-                      </div>
-                      <div data-complete={active.tone === "allow"} data-blocked={active.tone === "block"}>
-                        <span>{active.tone === "allow" ? <ReceiptText size={13} /> : <LockKeyhole size={13} />}</span>
-                        <p>
-                          <small>03 · Final route</small>
-                          {active.tone === "allow" ? "Payment released to merchant" : "Balance remains on the card"}
-                        </p>
-                      </div>
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </div>
-
-            <div className={styles.routeMap}>
-              <div className={styles.routeLabel}>
-                <ShieldCheck size={15} aria-hidden="true" />
-                <span><small>Open rail</small>Groceries · Pharmacy · Transit · Hygiene</span>
-              </div>
-              <div className={styles.routeTrack} aria-hidden="true">
-                <motion.span style={{ scaleX: prefersReducedMotion ? 1 : progressScale }} />
-                {CONTROL_STEPS.map((step, index) => (
-                  <i key={step.id} data-passed={index <= activeIndex} data-tone={step.tone} />
-                ))}
-              </div>
-              <div className={styles.routeLabelBlocked}>
-                <LockKeyhole size={15} aria-hidden="true" />
-                <span><small>Locked rail</small>Cash · Liquor · Gambling · Tobacco</span>
-              </div>
-            </div>
+            <AnimatePresence mode="wait" initial={false}>
+              {activeStep === 3 ? (
+                <motion.div
+                  key={`${transaction.id}-result`}
+                  className={styles.resultLabel}
+                  data-status={transaction.status}
+                  initial={prefersReducedMotion ? false : { opacity: 0, x: 12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -8 }}
+                  transition={{ duration: prefersReducedMotion ? 0 : 0.4, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <StatusIcon aria-hidden="true" />
+                  <span><small>{approved ? "Approved" : "Declined"}</small>{transaction.merchant}</span>
+                  <strong>{transaction.amount}</strong>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
           </div>
 
-          <div className={styles.chapterProgress} aria-hidden="true">
-            <span>FILTER 03</span>
-            <div><motion.i style={{ scaleX: prefersReducedMotion ? 1 : progressScale }} /></div>
-            <span>{Math.round(((activeIndex + 1) / CONTROL_STEPS.length) * 100)}%</span>
-          </div>
+          <Tabs value={transactionId} onValueChange={selectTransaction}>
+            <TabsList className={styles.tabsList} aria-label="Try another purchase">
+              {TRANSACTIONS.map((item) => {
+                const Icon = item.Icon;
+                return (
+                  <TabsTrigger className={styles.tabTrigger} value={item.id} key={item.id}>
+                    <Icon aria-hidden="true" />
+                    <span>{item.label}</span>
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
+          </Tabs>
         </div>
       </div>
+
+      <ol className={styles.srOnly} aria-label="How Boov authorizes a purchase">
+        {ACCESSIBLE_STEPS.map((step, index) => (
+          <li key={step} aria-current={index === activeStep ? "step" : undefined}>{step}</li>
+        ))}
+      </ol>
+      <p className={styles.srOnly} role="status" aria-live="polite" aria-atomic="true">
+        {announcement}
+      </p>
     </section>
   );
 }

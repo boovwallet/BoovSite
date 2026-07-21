@@ -6,6 +6,12 @@
   width: clamp(124px, 11vw, 158px);
   pointer-events: none;
   transform-origin: right bottom;
+  transition: opacity 220ms ease, visibility 220ms ease;
+}
+
+:global(html[data-controls-active="true"]) .root {
+  visibility: hidden;
+  opacity: 0 !important;
 }
 
 .stage {
