@@ -6,15 +6,15 @@ import Image from "next/image";
 import { useRef, useState } from "react";
 import { CTA_COPY, PLACEHOLDER_IMAGES } from "@/content/homepage";
 import { gsap } from "@/lib/gsap";
-import { useMagnetic } from "@/lib/hooks/useMagnetic";
 import { AnimatedText } from "./AnimatedText";
+import { BoovCharacter } from "./boov/BoovCharacter";
+import { BoovReserve } from "./boov/BoovReserve";
 import styles from "./CtaWaitlist.module.css";
 
 export function CtaWaitlist() {
   const sectionRef = useRef<HTMLElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
-  const submitRef = useMagnetic<HTMLButtonElement>();
 
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -70,9 +70,12 @@ export function CtaWaitlist() {
         <p className={styles.lead}>{CTA_COPY.lead}</p>
 
         {submitted ? (
-          <p className={styles.success} role="status">
-            {CTA_COPY.success}
-          </p>
+          <div className={styles.successWrap}>
+            <BoovCharacter size={88} blush />
+            <p className={styles.success} role="status">
+              {CTA_COPY.success}
+            </p>
+          </div>
         ) : (
           <form className={styles.form} onSubmit={onSubmit} noValidate>
             <div className={styles.field}>
@@ -93,15 +96,10 @@ export function CtaWaitlist() {
                 }}
                 aria-invalid={error}
               />
-              <button
-                ref={submitRef}
-                type="submit"
-                className={styles.submit}
-                data-cursor
-                data-cursor-label="Send"
-              >
-                {CTA_COPY.ctaLabel}
-              </button>
+              {/* Boov IS the submit control: he crawls in from the screen edge
+                  ("touch me!"), stands on the slot ("click me!"), and clicking
+                  him reserves the spot. */}
+              <BoovReserve armRef={sectionRef} />
             </div>
             {error && <p className={styles.errorText}>Enter a valid email address.</p>}
           </form>

@@ -148,6 +148,11 @@
   border-color: rgba(221, 212, 247, 0.3);
 }
 
+.ctaWrap {
+  display: inline-flex;
+  will-change: transform;
+}
+
 .cta {
   display: inline-flex;
   align-items: center;

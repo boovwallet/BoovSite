@@ -64,7 +64,13 @@ const themeScript = `try{if(localStorage.getItem("theme")==="dark")document.docu
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ViewTransitions>
-      <html lang="en" className={`${sniglet.variable} ${poppins.variable} ${spaceGrotesk.variable}`}>
+      {/* suppressHydrationWarning: the head script legitimately adds .dark
+          before hydration when a stored theme exists. */}
+      <html
+        lang="en"
+        className={`${sniglet.variable} ${poppins.variable} ${spaceGrotesk.variable}`}
+        suppressHydrationWarning
+      >
         <head>
           <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         </head>
