@@ -33,6 +33,15 @@
   --nav-ink: rgba(91, 58, 140, 0.86);
   --accent-contrast: #ffffff;
   --accent-deep-hover: #4a2f73;
+
+  /* Rainbow-button sweep. Deliberately not the stock rainbow — these are the
+     hero pastel-wash colours plus the brand lavenders, so the sweep reads as
+     this palette in motion rather than a foreign gradient. */
+  --color-1: #ffb199;
+  --color-2: #c9b8f0;
+  --color-3: #9ed3d9;
+  --color-4: #ffde97;
+  --color-5: #b8a7e8;
 }
 
 /* Dark theme: flip only the tokens the live pages consume. Surfaces go deep

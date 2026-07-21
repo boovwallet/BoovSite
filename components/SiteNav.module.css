@@ -125,24 +125,15 @@
 }
 
 .cta {
-  display: inline-flex;
-  align-items: center;
+  /* Layout and type only — ShimmerButton owns the fill, radius and shimmer. */
+  flex-shrink: 0;
   padding: 10px 20px;
-  border-radius: 999px;
-  background: var(--accent-deep);
-  color: var(--accent-contrast);
   font-family: var(--font-poppins), system-ui, sans-serif;
   font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.04em;
   white-space: nowrap;
   will-change: transform;
-  transition: background-color 0.4s ease, box-shadow 0.4s ease;
-}
-
-.cta:hover {
-  background: var(--accent-deep-hover);
-  box-shadow: 0 10px 30px rgba(74, 47, 115, 0.25);
 }
 
 @media (max-width: 820px) {

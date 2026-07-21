@@ -3,6 +3,7 @@
 import { useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { gsap } from "@/lib/gsap";
+import { RainbowButton } from "@/components/ui/rainbow-button";
 import { BoovCharacter, type BoovMode } from "./BoovCharacter";
 import styles from "./BoovReserve.module.css";
 
@@ -106,10 +107,13 @@ export function BoovReserve({
   const visible = armed || arrived;
 
   return (
-    <button
+    <RainbowButton
       ref={buttonRef}
       type="submit"
+      // The page's one terminal action, so it earns the loudest treatment on
+      // the site. The sweep is slowed to read as a sheen rather than a strobe.
       className={styles.button}
+      style={{ "--speed": "4.5s" } as React.CSSProperties}
       onClick={snapHome}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -131,6 +135,6 @@ export function BoovReserve({
           <BoovCharacter size={size} mode={mode} wave={arrived && hovered} />
         </span>
       </span>
-    </button>
+    </RainbowButton>
   );
 }

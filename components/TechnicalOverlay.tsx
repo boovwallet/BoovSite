@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { AnimatedCircularProgressBar } from "@/components/ui/animated-circular-progress-bar";
 import styles from "./TechnicalOverlay.module.css";
 
 type Section = { id: string; label: string };
@@ -32,6 +33,7 @@ function sectionsForPath(pathname: string): Section[] {
  */
 export function TechnicalOverlay() {
   const pctRef = useRef<HTMLSpanElement>(null);
+  const ringRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const sections = sectionsForPath(pathname);
   const [section, setSection] = useState(sections[0].label);
@@ -48,6 +50,9 @@ export function TechnicalOverlay() {
         const max = document.documentElement.scrollHeight - window.innerHeight;
         const pct = max > 0 ? Math.round((window.scrollY / max) * 100) : 0;
         if (pctRef.current) pctRef.current.textContent = String(pct).padStart(3, "0");
+        // Both arcs read one root custom property, so the ring tracks scroll
+        // by mutation — no React state, matching the read-out beside it.
+        ringRef.current?.style.setProperty("--acpb-percent", String(pct));
 
         // active section = last one whose top has passed the viewport middle
         const mid = window.innerHeight * 0.5;
@@ -79,6 +84,22 @@ export function TechnicalOverlay() {
 
       <span className={`${styles.label} ${styles.labelBL}`}>{section}</span>
       <span className={`${styles.label} ${styles.labelBR}`}>
+        <AnimatedCircularProgressBar
+          ref={ringRef}
+          className={styles.scrollRing}
+          value={0}
+          showValue={false}
+          gaugePrimaryColor="var(--boov-lavender, #b8a7e8)"
+          gaugeSecondaryColor="var(--tech-line, rgba(91, 58, 140, 0.3))"
+          // Inline: the component hardcodes size-40 and cn is clsx-only (no
+          // class merging), but it spreads `style` last, so this always wins.
+          style={{
+            width: 16,
+            height: 16,
+            "--circle-size": "16px",
+            "--transition-length": "0.18s",
+          } as React.CSSProperties}
+        />
         SCROLL&nbsp;<span ref={pctRef}>000</span>%
       </span>
 

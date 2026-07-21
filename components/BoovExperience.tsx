@@ -7,6 +7,7 @@ import { MorphingText } from "@/components/ui/morphing-text";
 import { FLOW_STEPS } from "@/content/homepage";
 import { gsap } from "@/lib/gsap";
 import { useLenis } from "@/lib/SmoothScroll";
+import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 import styles from "./BoovExperience.module.css";
 
 const EDGE_LAYERS = Array.from({ length: 17 }, (_, index) => index - 8);
@@ -253,6 +254,14 @@ function HeroIntro({ prefersReducedMotion }: { prefersReducedMotion: boolean }) 
   const [wordmarkSettled, setWordmarkSettled] = useState(prefersReducedMotion);
   const [introComplete, setIntroComplete] = useState(prefersReducedMotion);
 
+  // The cue's job: hand the locked intro over to the story.
+  const jumpToCard = () => {
+    const target = document.getElementById("tap-to-pay");
+    if (!target) return;
+    if (lenis) lenis.scrollTo(target);
+    else target.scrollIntoView({ behavior: "smooth" });
+  };
+
   useEffect(() => {
     if (prefersReducedMotion) {
       setIntroReady(true);
@@ -409,12 +418,19 @@ function HeroIntro({ prefersReducedMotion }: { prefersReducedMotion: boolean }) 
         ) : null}
       </div>
       <p className={styles.heroTagline}>THE FIRST-EVER TECHNOLOGY BUILT FOR THE UNHOUSED</p>
-      <div
-        className={`${styles.heroCue} ${introComplete ? styles.heroCueReady : ""}`}
-        aria-hidden="true"
-      >
-        <span>Scroll</span>
-        <i />
+      <div className={`${styles.heroCue} ${introComplete ? styles.heroCueReady : ""}`}>
+        {/* Was decorative text; now a real control — the hover-reveal arrow
+            reads as "onward" and gives the intro an actual way out. */}
+        <InteractiveHoverButton
+          className={styles.heroCueButton}
+          onClick={jumpToCard}
+          tabIndex={introComplete ? 0 : -1}
+          data-cursor
+          data-cursor-label="Begin"
+        >
+          See it work
+        </InteractiveHoverButton>
+        <i aria-hidden="true" />
       </div>
       <span className={styles.heroTransition} aria-hidden="true" />
     </section>

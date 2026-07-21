@@ -149,6 +149,19 @@
   transform: translate(-50%, 14px);
 }
 
+/* The cue is a control now, so its own colour/size rules move onto the button
+   and the container just positions it. */
+.heroCueButton {
+  border-color: color-mix(in srgb, var(--boov-purple) 32%, transparent);
+  background: transparent;
+  color: var(--boov-purple);
+  font-family: var(--font-poppins), system-ui, sans-serif;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
 .heroCueReady {
   opacity: 1;
   transform: translateX(-50%);

@@ -133,3 +133,15 @@
     letter-spacing: 0.12em;
   }
 }
+
+/* Scroll progress ring: sits inline with the percentage read-out, sized to the
+   cap-height of the label so it reads as punctuation rather than a widget. */
+.labelBR {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.scrollRing {
+  flex-shrink: 0;
+}

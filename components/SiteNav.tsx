@@ -5,7 +5,9 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { NAV_LINKS } from "@/content/homepage";
 import { useMagnetic } from "@/lib/hooks/useMagnetic";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { SkyToggle } from "@/components/ui/sky-toggle";
+import { useLenis } from "@/lib/SmoothScroll";
 import styles from "./SiteNav.module.css";
 
 function OrbitMark() {
@@ -21,7 +23,18 @@ function OrbitMark() {
 export function SiteNav() {
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
-  const ctaRef = useMagnetic<HTMLAnchorElement>();
+  const ctaRef = useMagnetic<HTMLButtonElement>();
+  const lenis = useLenis();
+
+  // The whole story lives on one page, so the nav CTA is an in-page jump.
+  // Driving it through Lenis keeps the smooth-scroll feel the rest of the
+  // site has, which a bare hash link would bypass.
+  const jumpToJoin = () => {
+    const target = document.getElementById("join");
+    if (!target) return;
+    if (lenis) lenis.scrollTo(target, { offset: -20 });
+    else target.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
     const onScroll = () => {
@@ -55,9 +68,18 @@ export function SiteNav() {
 
         <div className={styles.actions}>
           <SkyToggle className={styles.skyToggle} data-cursor data-cursor-label="Theme" />
-          <a ref={ctaRef} href="/#join" className={styles.cta} data-cursor data-cursor-label="Join">
+          <ShimmerButton
+            ref={ctaRef}
+            className={styles.cta}
+            onClick={jumpToJoin}
+            shimmerColor="#ddd4f7"
+            shimmerDuration="3.4s"
+            background="var(--accent-deep)"
+            data-cursor
+            data-cursor-label="Join"
+          >
             Join waitlist
-          </a>
+          </ShimmerButton>
         </div>
       </div>
     </header>

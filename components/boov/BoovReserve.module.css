@@ -2,26 +2,18 @@
    speech bubble ride above it (decorative, pointer-events pass through to the
    button). */
 
+/* Layout and type only — the RainbowButton owns the fill, radius and glow, so
+   anything visual here would fight it (cn is clsx-only, no class merging). */
 .button {
   position: relative;
   flex-shrink: 0;
   padding: 12px 26px;
-  border: 0;
-  border-radius: 999px;
-  background: #fff;
-  color: var(--boov-deep-navy, #05091a);
   font-family: var(--font-poppins), system-ui, sans-serif;
   font-size: 0.9rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   cursor: pointer;
   will-change: transform;
-  transition: background-color 0.4s ease, box-shadow 0.4s ease;
-}
-
-.button:hover {
-  background: var(--boov-light-lavender, #ddd4f7);
-  box-shadow: 0 12px 34px rgba(221, 212, 247, 0.32);
 }
 
 .caption {
