@@ -18,6 +18,7 @@ import { VapourScrollText } from "@/components/ui/vapour-scroll-text";
 import styles from "./HorizontalChapterTransition.module.css";
 
 const FEED_DELAY_MS = 1600;
+const MAX_VISIBLE_ALERTS = 4;
 
 export function HorizontalChapterTransition() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -75,8 +76,8 @@ export function HorizontalChapterTransition() {
   }, [feedPaused, prefersReducedMotion, reportActive, shownAlerts]);
 
   const visibleAlerts = prefersReducedMotion
-    ? ALERTS.slice(0, 2).slice().reverse()
-    : ALERTS.slice(0, shownAlerts).slice(-2).reverse();
+    ? ALERTS.slice(0, MAX_VISIBLE_ALERTS)
+    : ALERTS.slice(Math.max(0, shownAlerts - MAX_VISIBLE_ALERTS), shownAlerts);
 
   const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (prefersReducedMotion) return;
@@ -215,27 +216,28 @@ export function HorizontalChapterTransition() {
                       </div>
                     </div>
                     <div className={styles.previewList} aria-label="Illustrative donor activity">
-                      <AnimatePresence initial={false}>
-                        {visibleAlerts.map((alert) => (
-                          <motion.article
-                            key={alert.key}
-                            layout
-                            className={styles.previewAlert}
-                            initial={prefersReducedMotion ? false : { opacity: 0, y: -14 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 10 }}
-                            transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-                          >
-                            <Image src={alert.avatar} alt="" width={42} height={42} />
-                            <div>
-                              <p><strong>{alert.name}</strong> {alert.message}</p>
-                              <small>{alert.detail}</small>
-                              <span>{alert.badge}</span>
-                            </div>
-                            <b>{alert.amount}</b>
-                          </motion.article>
-                        ))}
-                      </AnimatePresence>
+                      <div className={styles.previewStack}>
+                        <AnimatePresence initial={false} mode="popLayout">
+                          {visibleAlerts.map((alert) => (
+                            <motion.article
+                              key={alert.key}
+                              className={styles.previewAlert}
+                              initial={prefersReducedMotion ? false : { opacity: 0, y: 14, scale: 0.98 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={prefersReducedMotion ? undefined : { opacity: 0, y: -8, scale: 0.98 }}
+                              transition={{ duration: prefersReducedMotion ? 0 : 0.34, ease: [0.22, 1, 0.36, 1] }}
+                            >
+                              <Image src={alert.avatar} alt="" width={42} height={42} />
+                              <div>
+                                <p><strong>{alert.name}</strong> {alert.message}</p>
+                                <small>{alert.detail}</small>
+                                <span>{alert.badge}</span>
+                              </div>
+                              <b>{alert.amount}</b>
+                            </motion.article>
+                          ))}
+                        </AnimatePresence>
+                      </div>
                     </div>
                     <div className={styles.previewPulse} />
                   </motion.div>

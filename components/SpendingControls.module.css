@@ -136,13 +136,13 @@
 .decisionFlash {
   position: absolute;
   z-index: 6;
-  top: 4%;
+  top: 1%;
   left: 62%;
-  width: min(620px, 62%);
+  width: min(340px, 32%);
   color: #8ce2a8;
-  font-size: clamp(2.6rem, 5vw, 5rem);
+  font-size: clamp(1.65rem, 3vw, 2.7rem);
   font-weight: 650;
-  line-height: 1;
+  line-height: 1.05;
   letter-spacing: 0;
   text-align: center;
   text-shadow: 0 0 24px rgba(95, 224, 141, 0.2);
@@ -159,9 +159,9 @@
 .cardInteraction {
   position: absolute;
   z-index: 4;
-  top: 48%;
+  top: 58%;
   left: 62%;
-  width: min(470px, 42vw);
+  width: min(450px, 40vw);
   aspect-ratio: 85.6 / 53.98;
   translate: -50% -50%;
   transform-style: preserve-3d;
@@ -299,7 +299,7 @@
 .terminal {
   position: absolute;
   z-index: 3;
-  top: 50%;
+  top: 58%;
   left: 27%;
   display: grid;
   width: clamp(74px, 7.2vw, 96px);
@@ -342,7 +342,7 @@
 .connection {
   position: absolute;
   z-index: 2;
-  top: 50%;
+  top: 58%;
   left: calc(27% + clamp(37px, 3.6vw, 48px));
   width: clamp(58px, 9vw, 126px);
   height: 1px;
@@ -376,14 +376,14 @@
 }
 
 .ruleLabel {
-  right: 7%;
-  bottom: 17%;
+  bottom: 9%;
+  left: 7%;
 }
 
 .ruleLabel::before,
 .resultLabel::before {
   position: absolute;
-  right: calc(100% + 12px);
+  left: calc(100% + 12px);
   width: clamp(30px, 4vw, 56px);
   height: 1px;
   background: rgba(184, 167, 232, 0.28);
@@ -416,8 +416,8 @@
 }
 
 .resultLabel {
-  top: 17%;
-  right: 5%;
+  bottom: 9%;
+  left: 7%;
   min-width: 260px;
 }
 
@@ -646,33 +646,33 @@
   }
 
   .decisionFlash {
-    top: 3%;
+    top: 0;
     left: 50%;
-    width: 92%;
-    font-size: clamp(2.4rem, 10vw, 3.8rem);
+    width: 90%;
+    font-size: clamp(1.65rem, 8vw, 2.25rem);
   }
 
   .cardInteraction {
-    top: 48%;
-    left: 53%;
-    width: min(330px, 80vw);
+    top: 54%;
+    left: 50%;
+    width: min(310px, 78vw);
   }
 
   .terminal {
-    top: 54%;
+    top: 57%;
     left: 9%;
     width: clamp(58px, 16vw, 72px);
   }
 
   .connection {
-    top: 54%;
+    top: 57%;
     left: calc(9% + clamp(29px, 8vw, 36px));
     width: clamp(34px, 11vw, 54px);
   }
 
   .ruleLabel {
-    right: 3%;
-    bottom: 7%;
+    bottom: 1%;
+    left: 2%;
     font-size: 0.7rem;
   }
 
@@ -681,9 +681,9 @@
   }
 
   .resultLabel {
-    top: auto;
-    right: 2%;
-    bottom: 5%;
+    right: auto;
+    bottom: 1%;
+    left: 2%;
     min-width: min(272px, 86vw);
     font-size: 0.7rem;
   }
@@ -759,13 +759,13 @@
   }
 
   .cardInteraction {
-    top: 47%;
-    width: min(286px, 74vw);
+    top: 52%;
+    width: min(270px, 72vw);
   }
 
   .terminal,
   .connection {
-    top: 52%;
+    top: 55%;
   }
 
   .ruleLabel,

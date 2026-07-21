@@ -430,7 +430,7 @@ export function SpendingControls() {
             </motion.div>
 
             <AnimatePresence mode="wait" initial={false}>
-              {visibleStep >= 2 ? (
+              {visibleStep === 2 ? (
                 <motion.div
                   key={`${transaction.id}-rule`}
                   className={styles.ruleLabel}
@@ -457,7 +457,7 @@ export function SpendingControls() {
                   transition={{ duration: prefersReducedMotion ? 0 : 0.4, ease: [0.22, 1, 0.36, 1] }}
                 >
                   <StatusIcon aria-hidden="true" />
-                  <span><small>{transaction.decision}</small>{transaction.merchant}</span>
+                  <span><small>Transaction</small>{transaction.merchant}</span>
                   <strong>{transaction.amount}</strong>
                 </motion.div>
               ) : null}
