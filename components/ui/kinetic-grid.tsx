@@ -77,7 +77,7 @@ export default function KineticGrid({
       let rippleY = 0;
 
       for (const ripple of ripplesRef.current) {
-        const age = Math.min(1, (now - ripple.born) / RIPPLE_LIFETIME);
+        const age = Math.max(0, Math.min(1, (now - ripple.born) / RIPPLE_LIFETIME));
         const radius = age * Math.max(sizeRef.current.width, sizeRef.current.height) * 0.72;
         const rippleDx = x - ripple.x;
         const rippleDy = y - ripple.y;
@@ -211,7 +211,7 @@ export default function KineticGrid({
       if (!staticOnly) {
         ripplesRef.current = ripplesRef.current.filter((ripple) => now - ripple.born < RIPPLE_LIFETIME);
         for (const ripple of ripplesRef.current) {
-          const age = (now - ripple.born) / RIPPLE_LIFETIME;
+          const age = Math.max(0, Math.min(1, (now - ripple.born) / RIPPLE_LIFETIME));
           const radius = age * Math.max(width, height) * 0.72;
           context.strokeStyle = rgba(activeColor, (1 - age) * 0.3);
           context.lineWidth = 1.25;
@@ -353,7 +353,7 @@ export default function KineticGrid({
   return (
     <div ref={rootRef} className={cn("h-full w-full overflow-hidden", className)} style={{ touchAction: "pan-y" }}>
       <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 z-0 h-full w-full" aria-hidden="true" />
-      <div className="pointer-events-none relative z-10 h-full w-full">{children}</div>
+      <div className="relative z-10 h-full w-full">{children}</div>
     </div>
   );
 }
