@@ -3,11 +3,15 @@
 import { useGSAP } from "@gsap/react";
 import { motion, useMotionTemplate, useMotionValueEvent, useReducedMotion, useScroll, useTransform, type MotionStyle, type MotionValue } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { MorphingText } from "@/components/ui/morphing-text";
 import { FLOW_STEPS } from "@/content/homepage";
 import { gsap } from "@/lib/gsap";
 import styles from "./BoovExperience.module.css";
 
 const EDGE_LAYERS = Array.from({ length: 17 }, (_, index) => index - 8);
+const HERO_WORDS = ["Tap To\nChange", "BOOV"];
+const HERO_ENTRANCE_SECONDS = 0.9;
+const HERO_HOLD_SECONDS = 0.8;
 
 // Scroll-progress boundaries mapped to the card animation's own keyframes:
 // tap (settle in) → allocate (spin) → spend (front→back crossfade at 0.5) → verify (rest).
@@ -214,37 +218,51 @@ function MemberCard({
 
 function HeroIntro({ prefersReducedMotion }: { prefersReducedMotion: boolean }) {
   const heroRef = useRef<HTMLElement>(null);
-  const wordRef = useRef<HTMLHeadingElement>(null);
-  const letters = "BOOV".split("");
+  const wordRef = useRef<HTMLDivElement>(null);
+  const [introReady, setIntroReady] = useState(prefersReducedMotion);
+  const [wordmarkSettled, setWordmarkSettled] = useState(prefersReducedMotion);
 
-  // Kinetic entrance: letters rise out of a mask after the preloader lifts.
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setIntroReady(true);
+      setWordmarkSettled(true);
+      return;
+    }
+
+    const loadState = window as typeof window & { __boovLoaded?: boolean };
+    if (loadState.__boovLoaded) {
+      setIntroReady(true);
+      return;
+    }
+
+    const reveal = () => setIntroReady(true);
+    window.addEventListener("boov:loaded", reveal, { once: true });
+    return () => window.removeEventListener("boov:loaded", reveal);
+  }, [prefersReducedMotion]);
+
+  // Keep the supporting copy hidden until the preloader hands off to the morph.
   useGSAP(
     () => {
-      const targets = gsap.utils.toArray<HTMLElement>(`.${styles.heroLetterInner}`, heroRef.current);
       const extras = gsap.utils.toArray<HTMLElement>(
         [`.${styles.heroTagline}`, `.${styles.heroCue}`],
         heroRef.current,
       );
-      if (!targets.length) return;
       if (prefersReducedMotion) {
-        gsap.set([...targets, ...extras], { clearProps: "all" });
+        gsap.set(extras, { clearProps: "all" });
         return;
       }
-      gsap.set(targets, { yPercent: 120 });
       gsap.set(extras, { opacity: 0, y: 20 });
-
-      // Start after the preloader signals done, or after a fixed fallback delay
-      // so the reveal is guaranteed even if the event is missed.
-      const flag = (window as typeof window & { __boovLoaded?: boolean }).__boovLoaded;
-      const delay = flag ? 0.1 : 3.4;
-      const tl = gsap.timeline({ delay });
-      tl.to(targets, { yPercent: 0, duration: 1.1, ease: "power4.out", stagger: 0.08 }).to(
-        extras,
-        { opacity: 1, y: 0, duration: 0.8, ease: "power3.out", stagger: 0.12 },
-        "-=0.5",
-      );
+      if (!introReady) return;
+      gsap.to(extras, {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        delay: 0.35,
+        ease: "power3.out",
+        stagger: 0.12,
+      });
     },
-    { scope: heroRef, dependencies: [prefersReducedMotion] },
+    { scope: heroRef, dependencies: [introReady, prefersReducedMotion] },
   );
 
   // Mouse parallax on the wordmark.
@@ -271,14 +289,21 @@ function HeroIntro({ prefersReducedMotion }: { prefersReducedMotion: boolean }) 
     <section ref={heroRef} className={styles.hero} aria-labelledby="boov-heading">
       <div className={styles.pastelWash} aria-hidden="true" />
       <h1 id="boov-heading" className={styles.srOnly}>
-        BOOV — The first-ever technology built for the unhoused
+        Tap To Change. BOOV — The first-ever technology built for the unhoused
       </h1>
       <div ref={wordRef} className={styles.heroWord} aria-hidden="true">
-        {letters.map((letter, i) => (
-          <span key={i} className={styles.heroLetter}>
-            <span className={styles.heroLetterInner}>{letter}</span>
-          </span>
-        ))}
+        {prefersReducedMotion ? (
+          <span className={`${styles.heroMorph} ${styles.heroMorphSettled}`}>BOOV</span>
+        ) : introReady ? (
+          <MorphingText
+            texts={HERO_WORDS}
+            entrance={HERO_ENTRANCE_SECONDS}
+            hold={HERO_HOLD_SECONDS}
+            loop={false}
+            onComplete={() => setWordmarkSettled(true)}
+            className={`${styles.heroMorph} ${wordmarkSettled ? styles.heroMorphSettled : ""}`}
+          />
+        ) : null}
       </div>
       <p className={styles.heroTagline}>THE FIRST-EVER TECHNOLOGY BUILT FOR THE UNHOUSED</p>
       <div className={styles.heroCue} aria-hidden="true">
