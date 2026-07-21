@@ -463,6 +463,26 @@
   will-change: left, transform;
 }
 
+.guideMascot::before {
+  position: absolute;
+  z-index: 0;
+  bottom: -5px;
+  left: 50%;
+  width: 86px;
+  height: 36px;
+  border: 1px solid rgba(217, 207, 242, 0.46);
+  border-radius: 50%;
+  box-shadow: 0 0 22px rgba(184, 167, 232, 0.2);
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) scale(0.72);
+}
+
+.guideMascot[data-arrived][data-phase="prompt"]::before {
+  animation: guideClickPulse 2.2s ease-out infinite;
+}
+
 .guideMascot:focus-visible {
   border-radius: 7px;
   outline: 2px solid #d9cff2;
@@ -479,8 +499,11 @@
   z-index: 2;
   bottom: calc(100% - 4px);
   left: 50%;
+  display: inline-flex;
   width: max-content;
   max-width: 220px;
+  align-items: center;
+  gap: 6px;
   padding: 8px 11px;
   border: 1px solid rgba(9, 19, 45, 0.2);
   border-radius: 5px;
@@ -494,6 +517,16 @@
   text-align: center;
   text-wrap: balance;
   transform: translateX(-50%);
+}
+
+.guideBubble > svg {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+}
+
+.guideMascot[data-arrived][data-phase="prompt"] .guideBubble {
+  animation: guideBubbleHint 2.2s ease-in-out infinite;
 }
 
 .guideBubble::after {
@@ -557,6 +590,34 @@
 
 .guideMascot[data-arrived] .guideBubble {
   opacity: 1;
+}
+
+@keyframes guideClickPulse {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.72);
+  }
+
+  24% {
+    opacity: 0.72;
+  }
+
+  72%,
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) scale(1.2);
+  }
+}
+
+@keyframes guideBubbleHint {
+  0%,
+  100% {
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28), 0 0 0 rgba(184, 167, 232, 0);
+  }
+
+  50% {
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28), 0 0 20px rgba(184, 167, 232, 0.28);
+  }
 }
 
 .tabsList {
@@ -695,7 +756,7 @@
   }
 
   .ruleLabel {
-    bottom: 1%;
+    bottom: clamp(64px, 16%, 96px);
     left: 2%;
     font-size: 0.7rem;
   }
@@ -792,7 +853,10 @@
     top: 55%;
   }
 
-  .ruleLabel,
+  .ruleLabel {
+    bottom: 76px;
+  }
+
   .resultLabel {
     bottom: 2%;
   }
@@ -826,5 +890,10 @@
 
   .tabTrigger {
     transition: none;
+  }
+
+  .guideMascot::before,
+  .guideBubble {
+    animation: none !important;
   }
 }

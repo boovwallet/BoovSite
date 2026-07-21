@@ -18,6 +18,7 @@ import {
   Banknote,
   Check,
   Droplets,
+  MousePointerClick,
   Nfc,
   ShieldCheck,
   ShoppingBasket,
@@ -558,7 +559,10 @@ export function SpendingControls() {
                     : { x: arrivalX, y: arrivalY, rotate: arrivalRotate, opacity: arrivalOpacity }
                 }
               >
-                <span className={styles.guideBubble}>{guidePrompt}</span>
+                <span className={styles.guideBubble}>
+                  {guidePhase === "prompt" ? <MousePointerClick aria-hidden="true" /> : null}
+                  <span>{guidePrompt}</span>
+                </span>
                 <BoovCharacter
                   className={styles.guideCharacter}
                   size={94}
