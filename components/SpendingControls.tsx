@@ -180,6 +180,7 @@ export function SpendingControls() {
   const [fieldActive, setFieldActive] = useState(false);
   const [guideIndex, setGuideIndex] = useState(0);
   const [guidePhase, setGuidePhase] = useState<GuidePhase>("prompt");
+  const [arrived, setArrived] = useState(prefersReducedMotion);
   const guideTimers = useRef<number[]>([]);
   const pointerX = useSpring(useMotionValue(0), { stiffness: 180, damping: 24, mass: 0.45 });
   const pointerY = useSpring(useMotionValue(0), { stiffness: 180, damping: 24, mass: 0.45 });
@@ -204,6 +205,26 @@ export function SpendingControls() {
     mass: 0.28,
     restDelta: 0.001,
   });
+
+  // Boov's arrival. This window runs from "section top at the viewport bottom"
+  // to "section pinned" — i.e. exactly the approach down from the card scene
+  // above — so his crawl reads as continuous with the page you came from.
+  const { scrollYProgress: approachProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "start start"],
+  });
+  const smoothApproach = useSpring(approachProgress, {
+    stiffness: 170,
+    damping: 32,
+    mass: 0.28,
+    restDelta: 0.001,
+  });
+  // rotate(90deg) maps the feet vector to the left, so he grips the left wall
+  // on the way down and unwinds as he rounds the corner onto the tab row.
+  const arrivalRotate = useTransform(smoothApproach, [0, 0.52, 0.8, 1], [90, 90, 26, 0]);
+  const arrivalX = useTransform(smoothApproach, [0, 0.52, 0.82, 1], ["-42vw", "-40vw", "-19vw", "0vw"]);
+  const arrivalY = useTransform(smoothApproach, [0, 0.5, 0.8, 1], ["-64vh", "-13vh", "0vh", "0vh"]);
+  const arrivalOpacity = useTransform(smoothApproach, [0, 0.05, 1], [0, 1, 1]);
   const fieldOpacity = useTransform(
     smoothProgress,
     [0, 0.08, 0.9, 1],
@@ -214,6 +235,12 @@ export function SpendingControls() {
     if (prefersReducedMotion) return;
     const nextStep = Math.min(3, Math.max(0, Math.floor(latest * 4)));
     setActiveStep((current) => (current === nextStep ? current : nextStep));
+  });
+
+  // Latch on landing: once he's on Groceries he stays there, so scrolling back
+  // up never sends him climbing the wall again.
+  useMotionValueEvent(smoothApproach, "change", (latest) => {
+    if (latest >= 0.99) setArrived(true);
   });
 
   useEffect(() => {
@@ -243,7 +270,10 @@ export function SpendingControls() {
   }, []);
 
   useEffect(() => {
-    if (prefersReducedMotion) setActiveStep(3);
+    if (prefersReducedMotion) {
+      setActiveStep(3);
+      setArrived(true);
+    }
   }, [prefersReducedMotion]);
 
   useEffect(() => () => {
@@ -471,7 +501,8 @@ export function SpendingControls() {
               data-position={guidePosition}
               data-phase={guidePhase}
               aria-label={`Run ${transaction.label} example`}
-              disabled={guidePhase === "travelling" || guidePhase === "result" || guidePhase === "complete"}
+              data-arrived={arrived ? "true" : undefined}
+              disabled={!arrived || guidePhase === "travelling" || guidePhase === "result" || guidePhase === "complete"}
               onClick={runGuidedPurchase}
               animate={
                 prefersReducedMotion
@@ -502,13 +533,31 @@ export function SpendingControls() {
               whileHover={prefersReducedMotion ? undefined : { scale: 1.045 }}
               whileTap={prefersReducedMotion ? undefined : { scale: 0.94 }}
             >
-              <span className={styles.guideBubble}>{guidePrompt}</span>
-              <BoovCharacter
-                className={styles.guideCharacter}
-                size={94}
-                mode={!prefersReducedMotion && guidePhase === "travelling" ? "crawl" : "idle"}
-                wave={guidePhase === "prompt" || guidePhase === "complete"}
-              />
+              {/* The button keeps its own left/bob/hop animation, so the
+                  scroll-driven arrival rides an inner wrapper instead — two
+                  transforms on one element would fight. */}
+              <motion.span
+                className={styles.guideArrival}
+                style={
+                  arrived
+                    ? undefined
+                    : { x: arrivalX, y: arrivalY, rotate: arrivalRotate, opacity: arrivalOpacity }
+                }
+              >
+                <span className={styles.guideBubble}>{guidePrompt}</span>
+                <BoovCharacter
+                  className={styles.guideCharacter}
+                  size={94}
+                  mode={
+                    prefersReducedMotion
+                      ? "idle"
+                      : !arrived || guidePhase === "travelling"
+                        ? "crawl"
+                        : "idle"
+                  }
+                  wave={arrived && (guidePhase === "prompt" || guidePhase === "complete")}
+                />
+              </motion.span>
             </motion.button>
 
             <Tabs value={transactionId} onValueChange={selectTransaction}>
