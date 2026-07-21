@@ -602,18 +602,62 @@
 }
 
 .flowStep {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
   opacity: 0.32;
   transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.flowStep:hover {
+  opacity: 0.72;
 }
 
 .flowStepActive {
   opacity: 1;
 }
 
+.flowButton {
+  position: relative;
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.flowButton::after {
+  position: absolute;
+  right: 0;
+  bottom: 1px;
+  left: 0;
+  height: 1px;
+  background: var(--boov-lavender);
+  content: "";
+  opacity: 0;
+  transform: scaleX(0.25);
+  transition: opacity 220ms ease, transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.flowStepActive .flowButton::after {
+  opacity: 0.9;
+  transform: scaleX(1);
+}
+
+.flowButton:focus-visible {
+  border-radius: 4px;
+  outline: 2px solid var(--boov-lavender);
+  outline-offset: 5px;
+}
+
 .flowIndex {
+  display: inline-grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
   color: var(--boov-lavender);
   font-family: var(--font-poppins), system-ui, sans-serif;
   font-size: 0.66rem;
@@ -725,7 +769,7 @@
   }
 
   .flowRail {
-    gap: 16px;
+    gap: 12px;
   }
 
   .flowIndex {
@@ -734,6 +778,12 @@
 
   .flowLabel {
     font-size: 0.8rem;
+  }
+
+  .flowButton {
+    gap: 0;
+    padding-right: 2px;
+    padding-left: 2px;
   }
 
   .flowDesc {

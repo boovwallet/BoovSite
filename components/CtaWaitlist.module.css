@@ -1,11 +1,9 @@
 .section {
   position: relative;
   isolation: isolate;
-  display: grid;
-  min-height: min(1100px, 108svh);
-  place-items: center;
-  overflow: hidden;
-  padding: clamp(112px, 16vh, 180px) 24px clamp(132px, 18vh, 210px);
+  height: 220svh;
+  min-height: 1500px;
+  overflow: clip;
   background: transparent;
   color: #fff;
 }
@@ -71,9 +69,15 @@
 }
 
 .inner {
-  position: relative;
+  position: sticky;
+  top: 0;
+  display: flex;
   width: min(1080px, 100%);
+  min-height: 100svh;
   margin: 0 auto;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(96px, 12vh, 132px) 24px clamp(72px, 10vh, 112px);
 }
 
 .copy {
@@ -169,10 +173,18 @@
   filter: drop-shadow(0 24px 20px rgba(3, 6, 18, 0.38));
 }
 
-.flipCard {
+.flipCardMotion {
   position: relative;
   width: 100%;
   aspect-ratio: 1.62;
+  transform-style: preserve-3d;
+  transform-origin: center;
+  will-change: transform;
+}
+
+.flipCard {
+  position: absolute;
+  inset: 0;
   transform-style: preserve-3d;
   transform-origin: center;
   will-change: transform;
@@ -460,8 +472,7 @@
 }
 
 @media (max-width: 820px) {
-  .section {
-    min-height: auto;
+  .inner {
     padding-top: 112px;
   }
 
@@ -470,7 +481,7 @@
     left: -12px;
   }
 
-  .flipCard {
+  .flipCardMotion {
     aspect-ratio: 1.5;
   }
 
@@ -480,7 +491,7 @@
 }
 
 @media (max-width: 640px) {
-  .section {
+  .inner {
     padding: 100px 16px 132px;
   }
 
@@ -518,7 +529,7 @@
     margin: 0 auto;
   }
 
-  .flipCard {
+  .flipCardMotion {
     aspect-ratio: auto;
     min-height: 360px;
   }
@@ -571,6 +582,7 @@
   }
 
   .localBoov,
+  .flipCardMotion,
   .flipCard,
   .boovImageWrap {
     will-change: auto;
