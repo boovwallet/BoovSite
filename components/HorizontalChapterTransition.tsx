@@ -1,7 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import { Pause, Play } from "lucide-react";
 import {
+  AnimatePresence,
   motion,
   useMotionValue,
   useReducedMotion,
@@ -9,16 +11,20 @@ import {
   useSpring,
   useTransform,
 } from "framer-motion";
-import { type PointerEvent as ReactPointerEvent, useRef } from "react";
+import { type PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from "react";
 import { ALERTS } from "@/content/alerts";
 import KineticGrid from "@/components/ui/kinetic-grid";
 import { VapourScrollText } from "@/components/ui/vapour-scroll-text";
 import styles from "./HorizontalChapterTransition.module.css";
 
+const FEED_DELAY_MS = 1600;
+
 export function HorizontalChapterTransition() {
   const sectionRef = useRef<HTMLElement>(null);
   const prefersReducedMotion = useReducedMotion();
-  const firstAlert = ALERTS[0];
+  const [shownAlerts, setShownAlerts] = useState(1);
+  const [feedPaused, setFeedPaused] = useState(false);
+  const [reportActive, setReportActive] = useState(false);
   const pointerX = useMotionValue(0);
   const pointerY = useMotionValue(0);
   const smoothPointerX = useSpring(pointerX, { stiffness: 120, damping: 22, mass: 0.5 });
@@ -42,6 +48,36 @@ export function HorizontalChapterTransition() {
   const phoneTiltX = useTransform(smoothPointerY, [-1, 1], [3, -3]);
   const phoneTiltY = useTransform(smoothPointerX, [-1, 1], [-5, 5]);
 
+  useEffect(
+    () => scrollYProgress.on("change", (latest) => {
+      setReportActive(latest >= 0.48 && latest <= 1);
+    }),
+    [scrollYProgress],
+  );
+
+  useEffect(() => {
+    if (reportActive) setShownAlerts(1);
+  }, [reportActive]);
+
+  useEffect(() => {
+    if (
+      prefersReducedMotion ||
+      feedPaused ||
+      !reportActive ||
+      shownAlerts >= ALERTS.length
+    ) return;
+
+    const timer = window.setTimeout(() => {
+      setShownAlerts((count) => Math.min(count + 1, ALERTS.length));
+    }, FEED_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [feedPaused, prefersReducedMotion, reportActive, shownAlerts]);
+
+  const visibleAlerts = prefersReducedMotion
+    ? ALERTS.slice(0, 2).slice().reverse()
+    : ALERTS.slice(0, shownAlerts).slice(-2).reverse();
+
   const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (prefersReducedMotion) return;
     const rect = event.currentTarget.getBoundingClientRect();
@@ -59,7 +95,7 @@ export function HorizontalChapterTransition() {
       ref={sectionRef}
       className={styles.section}
       data-reduced-motion={prefersReducedMotion ? "true" : "false"}
-      aria-hidden="true"
+      aria-label="How Boov verifies purchases and reports activity"
     >
       <div
         className={styles.stickyStage}
@@ -162,16 +198,44 @@ export function HorizontalChapterTransition() {
                     <div className={styles.phoneHeading}>
                       <small>Your impact</small>
                       <strong>Activity</strong>
-                      <span><i /> Live</span>
-                    </div>
-                    <div className={styles.previewAlert}>
-                      <Image src={firstAlert.avatar} alt="" width={48} height={48} />
-                      <div>
-                        <p><strong>{firstAlert.name}</strong> {firstAlert.message}</p>
-                        <small>{firstAlert.detail}</small>
-                        <span>{firstAlert.badge}</span>
+                      <div className={styles.phoneActions}>
+                        <span className={styles.phoneLive}><i /> Live</span>
+                        {!prefersReducedMotion && (
+                          <button
+                            type="button"
+                            className={styles.phonePause}
+                            onClick={() => setFeedPaused((current) => !current)}
+                            aria-label={feedPaused ? "Resume activity feed" : "Pause activity feed"}
+                            aria-pressed={feedPaused}
+                            title={feedPaused ? "Resume activity feed" : "Pause activity feed"}
+                          >
+                            {feedPaused ? <Play /> : <Pause />}
+                          </button>
+                        )}
                       </div>
-                      <b>{firstAlert.amount}</b>
+                    </div>
+                    <div className={styles.previewList} aria-label="Illustrative donor activity">
+                      <AnimatePresence initial={false}>
+                        {visibleAlerts.map((alert) => (
+                          <motion.article
+                            key={alert.key}
+                            layout
+                            className={styles.previewAlert}
+                            initial={prefersReducedMotion ? false : { opacity: 0, y: -14 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+                          >
+                            <Image src={alert.avatar} alt="" width={42} height={42} />
+                            <div>
+                              <p><strong>{alert.name}</strong> {alert.message}</p>
+                              <small>{alert.detail}</small>
+                              <span>{alert.badge}</span>
+                            </div>
+                            <b>{alert.amount}</b>
+                          </motion.article>
+                        ))}
+                      </AnimatePresence>
                     </div>
                     <div className={styles.previewPulse} />
                   </motion.div>

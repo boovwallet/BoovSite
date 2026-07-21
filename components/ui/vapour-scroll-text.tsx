@@ -24,6 +24,7 @@ type VapourScrollTextProps = {
 
 const SAMPLE_SPACING = 2;
 const PARTICLE_SIZE = 2.1;
+const TEXT_PADDING = 6;
 
 function clamp(value: number) {
   return Math.min(1, Math.max(0, value));
@@ -130,10 +131,21 @@ export function VapourScrollText({
     sampleContext.textAlign = "left";
     sampleContext.textBaseline = "top";
 
-    const textHeight = lines.length * lineHeight;
+    const longestLine = Math.max(
+      ...lines.map((line) => sampleContext.measureText(line).width),
+      1,
+    );
+    const availableWidth = Math.max(1, width - TEXT_PADDING * 2);
+    const fitScale = Math.min(1, availableWidth / longestLine);
+    const fittedFontSize = fontSize * fitScale;
+    const fittedLineHeight = lineHeight * fitScale;
+
+    sampleContext.font = `${fontWeight} ${fittedFontSize}px ${fontFamily}`;
+
+    const textHeight = lines.length * fittedLineHeight;
     const startY = Math.max(0, (height - textHeight) * 0.5);
     lines.forEach((line, index) => {
-      sampleContext.fillText(line, 0, startY + index * lineHeight);
+      sampleContext.fillText(line, TEXT_PADDING, startY + index * fittedLineHeight);
     });
 
     const image = sampleContext.getImageData(0, 0, sampleCanvas.width, sampleCanvas.height);

@@ -1,4 +1,3 @@
-import { AlertsFeed } from "@/components/AlertsFeed";
 import { BoovExperience } from "@/components/BoovExperience";
 import { CtaWaitlist } from "@/components/CtaWaitlist";
 import { HorizontalChapterTransition } from "@/components/HorizontalChapterTransition";
@@ -15,9 +14,6 @@ export default function Home() {
     <>
       <BoovExperience />
       <HorizontalChapterTransition />
-      <section id="alerts" aria-labelledby="alerts-heading">
-        <AlertsFeed />
-      </section>
       <SpendingControls />
       <CtaWaitlist />
     </>
