@@ -7,23 +7,42 @@ import { useLenis } from "@/lib/SmoothScroll";
 
 /**
  * On route changes: snap scroll to the top (or to the URL hash target) and
- * re-measure ScrollTrigger against the new page height. `force: true`
- * overrides an in-flight Lenis animation — without it, navigating mid-scroll
- * lands the new route partway down (lenis#319). Skips the very first mount so
- * it never clobbers the browser's initial position or a direct hash load, and
- * falls back to native scrolling when Lenis is disabled (reduced motion).
+ * re-measure ScrollTrigger against the new page height. A stale #alerts URL is
+ * treated as a normal homepage entry so the story always begins at BOOV.
  */
 export function ScrollReset() {
   const lenis = useLenis();
   const pathname = usePathname();
   const lastPathname = useRef(pathname);
+  const initialLoad = useRef(true);
 
   useEffect(() => {
-    if (lastPathname.current === pathname) return;
+    const previous = window.history.scrollRestoration;
+    window.history.scrollRestoration = "manual";
+    return () => {
+      window.history.scrollRestoration = previous;
+    };
+  }, []);
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    const startsHomepage = pathname === "/" && (hash === "" || hash === "#alerts");
+    const pathnameChanged = lastPathname.current !== pathname;
+
+    if (initialLoad.current) {
+      initialLoad.current = false;
+    } else if (!pathnameChanged && !startsHomepage) {
+      return;
+    }
+
+    if (!startsHomepage && !pathnameChanged) return;
     lastPathname.current = pathname;
 
-    const hash = window.location.hash;
-    const target = hash ? document.getElementById(hash.slice(1)) : null;
+    if (hash === "#alerts") {
+      window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+    }
+
+    const target = !startsHomepage && hash ? document.getElementById(hash.slice(1)) : null;
 
     if (lenis) {
       if (target) lenis.scrollTo(target, { immediate: true, force: true });

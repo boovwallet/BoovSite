@@ -7,24 +7,13 @@
   padding: clamp(130px, 22vh, 240px) 24px;
 }
 
-.bg {
-  position: absolute;
-  z-index: -2;
-  inset: -12% 0;
-  will-change: transform;
-}
-
-.bg :global(img) {
-  opacity: 0.42;
-}
-
 .scrim {
   position: absolute;
   z-index: -1;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(5, 9, 26, 0.86) 0%, rgba(5, 9, 26, 0.62) 42%, rgba(5, 9, 26, 0.92) 100%),
-    radial-gradient(ellipse at 50% 40%, rgba(91, 58, 140, 0.32), transparent 62%);
+    linear-gradient(180deg, rgba(5, 9, 26, 0.08), rgba(5, 9, 26, 0.24)),
+    radial-gradient(ellipse at 50% 42%, rgba(91, 58, 140, 0.12), transparent 66%);
 }
 
 .inner {
@@ -34,31 +23,14 @@
   text-align: center;
 }
 
-.kicker {
-  margin: 0 0 22px;
-  color: var(--boov-lavender, #b8a7e8);
-  font-family: var(--font-poppins), system-ui, sans-serif;
-  font-size: 0.74rem;
-  font-weight: 600;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-}
-
 .headline {
-  margin: 0 auto 26px;
+  margin: 0 auto 44px;
   max-width: 16ch;
   color: #fff;
   font-size: clamp(2.4rem, 5.4vw, 4.2rem);
   line-height: 1.02;
-  letter-spacing: -0.02em;
-}
-
-.lead {
-  max-width: 56ch;
-  margin: 0 auto 44px;
-  color: rgba(221, 212, 247, 0.86);
-  font-size: 1.1rem;
-  line-height: 1.7;
+  letter-spacing: 0;
+  text-shadow: 0 5px 30px rgba(5, 9, 26, 0.3);
 }
 
 .form {

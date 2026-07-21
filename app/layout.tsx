@@ -58,13 +58,18 @@ export const metadata: Metadata = {
   },
 };
 
-// Applied before hydration so a stored dark preference never flashes light.
-const themeScript = `try{if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}`;
+// Dark is the product default. An explicitly saved light preference is applied
+// before first paint so returning visitors do not see a theme flash.
+const themeScript = `try{document.documentElement.classList.toggle("dark",localStorage.getItem("theme")!=="light")}catch(e){document.documentElement.classList.add("dark")}`;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ViewTransitions>
-      <html lang="en" className={`${sniglet.variable} ${poppins.variable} ${spaceGrotesk.variable}`}>
+      <html
+        lang="en"
+        suppressHydrationWarning
+        className={`${sniglet.variable} ${poppins.variable} ${spaceGrotesk.variable} dark`}
+      >
         <head>
           <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         </head>

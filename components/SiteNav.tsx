@@ -21,7 +21,6 @@ function OrbitMark() {
 export function SiteNav() {
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
-  // Link renders an <a>, so the magnetic ref type holds.
   const ctaRef = useMagnetic<HTMLAnchorElement>();
 
   useEffect(() => {
@@ -58,9 +57,9 @@ export function SiteNav() {
           {/* No static aria-label here — the toggler labels itself dynamically
               ("Switch to dark/light theme"). */}
           <AnimatedThemeToggler className={styles.theme} data-cursor data-cursor-label="Theme" />
-          <Link ref={ctaRef} href="/#join" className={styles.cta} data-cursor data-cursor-label="Join">
+          <a ref={ctaRef} href="/#join" className={styles.cta} data-cursor data-cursor-label="Join">
             Join waitlist
-          </Link>
+          </a>
         </div>
       </div>
     </header>

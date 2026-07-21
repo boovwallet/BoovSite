@@ -112,17 +112,11 @@ export const LIVE_FEED_SAMPLE: FeedItem[] = [
 
 export const NAV_LINKS = [
   { label: "Home", href: "/" },
-  { label: "Story", href: "/story" },
-  { label: "The Lab", href: "/play" },
 ] as const;
 
-// The closing chapter of the home story: the card is coming — leave an
-// address, get exactly one signal on release day.
+// The closing chapter of the home story.
 export const CTA_COPY = {
-  kicker: "04 — The release",
-  headline: "The card ships. Be there when it does.",
-  lead:
-    "Boov Essentials enters circulation soon — first through partner shelters and street teams, then city by city. Leave an address and you get one signal, once: the day the card goes live near you.",
+  headline: "Stay Updated",
   ctaLabel: "Reserve my place",
   placeholder: "you@email.com",
   success: "Logged. One signal — release day.",
@@ -143,9 +137,5 @@ export const PLACEHOLDER_IMAGES = {
   manifesto: {
     src: "https://images.unsplash.com/photo-1519999482648-25049ddd37b1?w=1200&q=80&auto=format&fit=crop",
     alt: "Two people sharing a warm exchange on a city street — placeholder imagery.",
-  },
-  cta: {
-    src: "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=2000&q=80&auto=format&fit=crop",
-    alt: "A city at dusk — placeholder imagery.",
   },
 };

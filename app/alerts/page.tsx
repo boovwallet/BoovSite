@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-// The alerts ledger is a chapter of the home story now.
+// The activity feed is a chapter of the home story, not a standalone entry.
 export default function AlertsPage() {
-  redirect("/#alerts");
+  redirect("/");
 }
