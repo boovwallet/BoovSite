@@ -93,7 +93,7 @@ export function GsapExhibit() {
             STAGGER 0.045/CHAR — SKEW -14° → 0° — EASE {EASE_OUT.toUpperCase()}
           </p>
 
-          <Link ref={ctaRef} href="/story#join" className={styles.cta}>
+          <Link ref={ctaRef} href="/#join" className={styles.cta}>
             Back the proof
           </Link>
         </div>

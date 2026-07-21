@@ -113,18 +113,19 @@ export const LIVE_FEED_SAMPLE: FeedItem[] = [
 export const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Story", href: "/story" },
-  { label: "Alerts", href: "/alerts" },
   { label: "The Lab", href: "/play" },
 ] as const;
 
+// The closing chapter of the home story: the card is coming — leave an
+// address, get exactly one signal on release day.
 export const CTA_COPY = {
-  kicker: "Get involved",
-  headline: "Help build the first programmable aid network.",
+  kicker: "04 — The release",
+  headline: "The card ships. Be there when it does.",
   lead:
-    "Boov is being built now — with donors, nonprofits, merchants, and people who believe directed giving should be the default. Join the waitlist to help shape it.",
-  ctaLabel: "Join the waitlist",
+    "Boov Essentials enters circulation soon — first through partner shelters and street teams, then city by city. Leave an address and you get one signal, once: the day the card goes live near you.",
+  ctaLabel: "Reserve my place",
   placeholder: "you@email.com",
-  success: "You're on the list. We'll be in touch.",
+  success: "Logged. One signal — release day.",
 };
 
 export const FOOTER = {

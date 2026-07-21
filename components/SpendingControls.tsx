@@ -14,7 +14,7 @@ export function SpendingControls() {
     <section id="controls" ref={sectionRef} className={styles.section} aria-label="Spending controls">
       <div className={styles.inner}>
         <header className={styles.head}>
-          <p className={`${styles.kicker} ${styles.reveal}`}>Spending controls</p>
+          <p className={`${styles.kicker} ${styles.reveal}`}>02 — What the card locks to</p>
           <AnimatedText
             as="h2"
             text="Directed to the essentials — nothing else."

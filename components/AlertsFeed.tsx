@@ -93,17 +93,20 @@ export function AlertsFeed() {
     <div ref={sectionRef} className={styles.section}>
       <div className={styles.inner}>
         <div className={styles.copy}>
-          <p className={`${styles.kicker} ${styles.reveal}`}>03 — Alerts</p>
+          <p className={`${styles.kicker} ${styles.reveal}`}>03 — What the card reports</p>
 
-          <h1 id="alerts-heading" className={`${styles.headline} ${styles.reveal}`}>
+          {/* h2: this section is a chapter of the home story, whose h1 is the
+              hero wordmark. */}
+          <h2 id="alerts-heading" className={`${styles.headline} ${styles.reveal}`}>
             <span className={styles.headlineLine}>Every dollar</span>
             <span className={styles.headlineLine}>reports back.</span>
-          </h1>
+          </h2>
 
           <p className={`${styles.lead} ${styles.reveal}`}>
-            No dashboards to request, no quarterly summaries. Each entry below is
-            what a member&rsquo;s device shows the moment money moves — allocated,
-            spent, and checked against the merchant record.
+            The card doesn&rsquo;t just spend — it talks. No dashboards to request,
+            no quarterly summaries: each entry below is what a member&rsquo;s device
+            shows the moment money moves — allocated, spent, and checked against
+            the merchant record.
           </p>
 
           <p className={`${styles.readout} ${styles.reveal}`} aria-live="off">

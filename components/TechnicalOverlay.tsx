@@ -9,23 +9,24 @@ type Section = { id: string; label: string };
 // Route number = nav order (01 home … 04 lab); letters index sections within a
 // route. Keeps the read-out honest on every page instead of silently sticking
 // to the homepage table.
+// Home reads as chapters of one story; the other routes keep their own tables.
 const SECTION_MAP: Record<string, Section[]> = {
   "/": [
-    { id: "top", label: "01 — INDEX" },
-    { id: "tap-to-pay", label: "01A — THE CARD" },
+    { id: "top", label: "00 — INDEX" },
+    { id: "tap-to-pay", label: "01 — THE CARD" },
+    { id: "controls", label: "02 — LOCKS TO" },
+    { id: "alerts", label: "03 — REPORTS" },
+    { id: "join", label: "04 — RELEASE" },
   ],
   "/story": [
-    { id: "controls", label: "02A — CONTROLS" },
-    { id: "mission", label: "02B — MANIFESTO" },
-    { id: "impact", label: "02C — IMPACT" },
-    { id: "join", label: "02D — JOIN" },
+    { id: "mission", label: "A — MANIFESTO" },
+    { id: "impact", label: "B — IMPACT" },
   ],
-  "/alerts": [{ id: "alerts", label: "03 — ALERTS" }],
   "/play": [
-    { id: "exp-01", label: "04A — SPRING" },
-    { id: "exp-02", label: "04B — GSAP" },
-    { id: "exp-03", label: "04C — MOTION" },
-    { id: "exp-04", label: "04D — MAGIC UI" },
+    { id: "exp-01", label: "EXP-01 — SPRING" },
+    { id: "exp-02", label: "EXP-02 — GSAP" },
+    { id: "exp-03", label: "EXP-03 — MOTION" },
+    { id: "exp-04", label: "EXP-04 — MAGIC UI" },
   ],
 };
 

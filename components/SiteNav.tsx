@@ -58,7 +58,7 @@ export function SiteNav() {
           {/* No static aria-label here — the toggler labels itself dynamically
               ("Switch to dark/light theme"). */}
           <AnimatedThemeToggler className={styles.theme} data-cursor data-cursor-label="Theme" />
-          <Link ref={ctaRef} href="/story#join" className={styles.cta} data-cursor data-cursor-label="Join">
+          <Link ref={ctaRef} href="/#join" className={styles.cta} data-cursor data-cursor-label="Join">
             Join waitlist
           </Link>
         </div>
