@@ -3,7 +3,7 @@
 import { useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { gsap } from "@/lib/gsap";
-import { RainbowButton } from "@/components/ui/rainbow-button";
+import { GooeyButton } from "@/components/ui/gooey-button";
 import { BoovCharacter, type BoovMode } from "./BoovCharacter";
 import styles from "./BoovReserve.module.css";
 
@@ -107,13 +107,12 @@ export function BoovReserve({
   const visible = armed || arrived;
 
   return (
-    <RainbowButton
+    <GooeyButton
       ref={buttonRef}
       type="submit"
-      // The page's one terminal action, so it earns the loudest treatment on
-      // the site. The sweep is slowed to read as a sheen rather than a strobe.
+      // The page's one terminal action. GooeyButton owns the fill, radius and
+      // type, so the module class only carries what it does not.
       className={styles.button}
-      style={{ "--speed": "4.5s" } as React.CSSProperties}
       onClick={snapHome}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -121,7 +120,7 @@ export function BoovReserve({
       data-cursor
       data-cursor-label="Reserve"
     >
-      <span className={styles.caption}>Reserve spot</span>
+      Reserve spot
       <span
         ref={riderRef}
         className={`${styles.rider} ${visible ? styles.riderVisible : ""}`}
@@ -135,6 +134,6 @@ export function BoovReserve({
           <BoovCharacter size={size} mode={mode} wave={arrived && hovered} />
         </span>
       </span>
-    </RainbowButton>
+    </GooeyButton>
   );
 }

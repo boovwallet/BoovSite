@@ -2,22 +2,10 @@
    speech bubble ride above it (decorative, pointer-events pass through to the
    button). */
 
-/* Layout and type only — the RainbowButton owns the fill, radius and glow, so
-   anything visual here would fight it (cn is clsx-only, no class merging). */
+/* GooeyButton owns fill, radius, padding and type — this only carries what it
+   does not: the rider's containing block sits on the button itself. */
 .button {
-  position: relative;
-  flex-shrink: 0;
-  padding: 12px 26px;
-  font-family: var(--font-poppins), system-ui, sans-serif;
-  font-size: 0.9rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  cursor: pointer;
   will-change: transform;
-}
-
-.caption {
-  white-space: nowrap;
 }
 
 /* The rig stands on top of the pill. Hidden until the crawl arms so he does
