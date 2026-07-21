@@ -6,12 +6,14 @@ import { useEffect, useRef, useState } from "react";
 import { MorphingText } from "@/components/ui/morphing-text";
 import { FLOW_STEPS } from "@/content/homepage";
 import { gsap } from "@/lib/gsap";
+import { useLenis } from "@/lib/SmoothScroll";
 import styles from "./BoovExperience.module.css";
 
 const EDGE_LAYERS = Array.from({ length: 17 }, (_, index) => index - 8);
 const HERO_WORDS = ["Tap To\nChange", "BOOV"];
 const HERO_ENTRANCE_SECONDS = 0.9;
 const HERO_HOLD_SECONDS = 0.8;
+const HERO_SETTLE_MILLISECONDS = 620;
 
 // Scroll-progress boundaries mapped to the card animation's own keyframes:
 // tap (settle in) → allocate (spin) → spend (front→back crossfade at 0.5) → verify (rest).
@@ -219,13 +221,16 @@ function MemberCard({
 function HeroIntro({ prefersReducedMotion }: { prefersReducedMotion: boolean }) {
   const heroRef = useRef<HTMLElement>(null);
   const wordRef = useRef<HTMLDivElement>(null);
+  const lenis = useLenis();
   const [introReady, setIntroReady] = useState(prefersReducedMotion);
   const [wordmarkSettled, setWordmarkSettled] = useState(prefersReducedMotion);
+  const [introComplete, setIntroComplete] = useState(prefersReducedMotion);
 
   useEffect(() => {
     if (prefersReducedMotion) {
       setIntroReady(true);
       setWordmarkSettled(true);
+      setIntroComplete(true);
       return;
     }
 
@@ -240,29 +245,100 @@ function HeroIntro({ prefersReducedMotion }: { prefersReducedMotion: boolean }) 
     return () => window.removeEventListener("boov:loaded", reveal);
   }, [prefersReducedMotion]);
 
-  // Keep the supporting copy hidden until the preloader hands off to the morph.
+  useEffect(() => {
+    if (prefersReducedMotion || !wordmarkSettled) return;
+
+    const timeout = window.setTimeout(() => {
+      setIntroComplete(true);
+      window.dispatchEvent(new Event("boov:intro-complete"));
+    }, HERO_SETTLE_MILLISECONDS);
+
+    return () => window.clearTimeout(timeout);
+  }, [prefersReducedMotion, wordmarkSettled]);
+
+  // Lock every native scroll path while the opening wordmark resolves. The
+  // preloader controls body overflow, so the longer hero lock lives on html.
+  useEffect(() => {
+    if (prefersReducedMotion || introComplete) return;
+
+    const root = document.documentElement;
+    const previousOverflow = root.style.overflow;
+    const previousOverscroll = root.style.overscrollBehavior;
+    const blockedKeys = new Set(["ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End", " "]);
+    const preventScroll = (event: Event) => event.preventDefault();
+    const preventScrollKey = (event: KeyboardEvent) => {
+      if (blockedKeys.has(event.key)) event.preventDefault();
+    };
+
+    root.style.overflow = "hidden";
+    root.style.overscrollBehavior = "none";
+    window.scrollTo(0, 0);
+    window.addEventListener("wheel", preventScroll, { passive: false });
+    window.addEventListener("touchmove", preventScroll, { passive: false });
+    window.addEventListener("keydown", preventScrollKey);
+
+    return () => {
+      root.style.overflow = previousOverflow;
+      root.style.overscrollBehavior = previousOverscroll;
+      window.removeEventListener("wheel", preventScroll);
+      window.removeEventListener("touchmove", preventScroll);
+      window.removeEventListener("keydown", preventScrollKey);
+    };
+  }, [introComplete, prefersReducedMotion]);
+
+  useEffect(() => {
+    if (prefersReducedMotion || introComplete || !lenis) return;
+
+    lenis.scrollTo(0, { immediate: true, force: true });
+    lenis.stop();
+    return () => {
+      lenis.scrollTo(0, { immediate: true, force: true });
+      lenis.start();
+    };
+  }, [introComplete, lenis, prefersReducedMotion]);
+
+  // Keep the supporting tagline hidden until the preloader hands off.
   useGSAP(
     () => {
-      const extras = gsap.utils.toArray<HTMLElement>(
-        [`.${styles.heroTagline}`, `.${styles.heroCue}`],
-        heroRef.current,
-      );
+      const tagline = heroRef.current?.querySelector<HTMLElement>(`.${styles.heroTagline}`);
+      if (!tagline) return;
       if (prefersReducedMotion) {
-        gsap.set(extras, { clearProps: "all" });
+        gsap.set(tagline, { clearProps: "all" });
         return;
       }
-      gsap.set(extras, { opacity: 0, y: 20 });
+      gsap.set(tagline, { opacity: 0, y: 20 });
       if (!introReady) return;
-      gsap.to(extras, {
+      gsap.to(tagline, {
         opacity: 1,
         y: 0,
         duration: 0.8,
         delay: 0.35,
         ease: "power3.out",
-        stagger: 0.12,
       });
     },
     { scope: heroRef, dependencies: [introReady, prefersReducedMotion] },
+  );
+
+  // The scroll cue is the visual handoff from a locked intro to the page.
+  useGSAP(
+    () => {
+      const cue = heroRef.current?.querySelector<HTMLElement>(`.${styles.heroCue}`);
+      const line = cue?.querySelector<HTMLElement>("i");
+      if (!cue) return;
+      if (prefersReducedMotion) {
+        gsap.set([cue, line], { clearProps: "all" });
+        return;
+      }
+
+      gsap.set(cue, { opacity: 0, y: 14 });
+      if (line) gsap.set(line, { opacity: 0, scaleY: 0, transformOrigin: "50% 0%" });
+      if (!introComplete) return;
+
+      const timeline = gsap.timeline({ defaults: { ease: "power3.out" } });
+      timeline.to(cue, { opacity: 1, y: 0, duration: 0.55 });
+      if (line) timeline.to(line, { opacity: 1, scaleY: 1, duration: 0.42 }, "-=0.3");
+    },
+    { scope: heroRef, dependencies: [introComplete, prefersReducedMotion] },
   );
 
   // Mouse parallax on the wordmark.
@@ -306,7 +382,10 @@ function HeroIntro({ prefersReducedMotion }: { prefersReducedMotion: boolean }) 
         ) : null}
       </div>
       <p className={styles.heroTagline}>THE FIRST-EVER TECHNOLOGY BUILT FOR THE UNHOUSED</p>
-      <div className={styles.heroCue} aria-hidden="true">
+      <div
+        className={`${styles.heroCue} ${introComplete ? styles.heroCueReady : ""}`}
+        aria-hidden="true"
+      >
         <span>Scroll</span>
         <i />
       </div>

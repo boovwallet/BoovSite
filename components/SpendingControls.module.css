@@ -247,15 +247,16 @@
   perspective: 900px;
 }
 
-.scanner::before {
+.kineticGrid {
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(color-mix(in srgb, var(--tech-line) 34%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--tech-line) 34%, transparent) 1px, transparent 1px);
-  background-size: 28px 28px;
-  content: "";
-  opacity: 0.45;
+  cursor: crosshair;
+}
+
+.scannerLayer {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .scannerAxis {

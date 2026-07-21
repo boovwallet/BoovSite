@@ -38,6 +38,7 @@ export function Cursor() {
     const ringY = gsap.quickTo(ring, "y", { duration: 0.5, ease: "power3.out" });
 
     let visible = false;
+    let hoverActive = false;
     const onMove = (e: MouseEvent) => {
       if (!visible) {
         visible = true;
@@ -50,13 +51,14 @@ export function Cursor() {
     };
 
     const setHover = (active: boolean, text?: string) => {
+      hoverActive = active;
       gsap.to(ring, {
         scale: active ? 1.9 : 1,
-        borderColor: active ? "rgba(184,167,232,0.9)" : "rgba(184,167,232,0.45)",
         duration: 0.35,
         ease: "power3.out",
       });
-      gsap.to(dot, { scale: active ? 0.4 : 1, duration: 0.35, ease: "power3.out" });
+      ring.dataset.active = String(active);
+      gsap.to(dot, { scale: active ? 1.35 : 1, duration: 0.35, ease: "power3.out" });
       if (text) {
         label.textContent = text;
         gsap.to(label, { opacity: 1, duration: 0.25 });
@@ -78,8 +80,14 @@ export function Cursor() {
       setHover(false);
     };
 
-    const onDown = () => gsap.to(ring, { scale: 0.8, duration: 0.2 });
-    const onUp = () => gsap.to(ring, { scale: 1, duration: 0.3 });
+    const onDown = () => {
+      gsap.to(ring, { scale: hoverActive ? 1.55 : 0.86, duration: 0.16 });
+      gsap.to(dot, { scale: hoverActive ? 1.15 : 0.86, duration: 0.16 });
+    };
+    const onUp = () => {
+      gsap.to(ring, { scale: hoverActive ? 1.9 : 1, duration: 0.24, ease: "power3.out" });
+      gsap.to(dot, { scale: hoverActive ? 1.35 : 1, duration: 0.24, ease: "power3.out" });
+    };
 
     window.addEventListener("mousemove", onMove);
     document.addEventListener("mouseover", onOver);
@@ -100,6 +108,26 @@ export function Cursor() {
 
   return (
     <div className={styles.root} aria-hidden="true">
+      <svg className={styles.filters} focusable="false">
+        <defs>
+          <filter
+            id="boov-cursor-swap"
+            x="-50%"
+            y="-50%"
+            width="200%"
+            height="200%"
+            colorInterpolationFilters="sRGB"
+          >
+            <feColorMatrix
+              type="matrix"
+              values="-0.18943 -0.63724 -0.06433 0 1.24786
+                      -0.22754 -0.76547 -0.07727 0 1.29773
+                      -0.13283 -0.44685 -0.04511 0 1.17380
+                       0        0        0       1 0"
+            />
+          </filter>
+        </defs>
+      </svg>
       <div ref={ringRef} className={styles.ring}>
         <span ref={labelRef} className={styles.label} />
       </div>

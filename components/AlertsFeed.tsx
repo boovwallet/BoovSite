@@ -9,7 +9,6 @@ import { useScrollReveal } from "@/lib/hooks/useScrollReveal";
 import styles from "./AlertsFeed.module.css";
 
 const FEED_DELAY_MS = 1600;
-const RESTART_BUFFER_MS = 2800;
 
 function AlertCard({ alert }: { alert: AlertItem }) {
   return (
@@ -45,37 +44,50 @@ function AlertCard({ alert }: { alert: AlertItem }) {
 
 export function AlertsFeed() {
   const sectionRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
-  const [cycle, setCycle] = useState(0);
   const [shown, setShown] = useState(1);
   const [paused, setPaused] = useState(false);
+  const [isInView, setIsInView] = useState(false);
 
   useScrollReveal(sectionRef, { selector: `.${styles.reveal}`, stagger: 0.08, y: 18 });
 
   useEffect(() => {
-    if (prefersReducedMotion || paused) return;
+    const stage = stageRef.current;
+    if (!stage) return;
 
-    const tick = window.setInterval(() => {
+    let wasInView = false;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const nextInView = entry.isIntersecting && entry.intersectionRatio >= 0.35;
+
+        if (nextInView && !wasInView) {
+          setShown(1);
+        }
+
+        wasInView = nextInView;
+        setIsInView(nextInView);
+      },
+      { threshold: [0, 0.35] },
+    );
+
+    observer.observe(stage);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (prefersReducedMotion || paused || !isInView || shown >= ALERTS.length) return;
+
+    const tick = window.setTimeout(() => {
       setShown((count) => Math.min(count + 1, ALERTS.length));
     }, FEED_DELAY_MS);
-    const restart = window.setTimeout(() => {
-      setShown(1);
-      setCycle((current) => current + 1);
-    }, ALERTS.length * FEED_DELAY_MS + RESTART_BUFFER_MS);
 
-    return () => {
-      window.clearInterval(tick);
-      window.clearTimeout(restart);
-    };
-  }, [cycle, paused, prefersReducedMotion]);
+    return () => window.clearTimeout(tick);
+  }, [isInView, paused, prefersReducedMotion, shown]);
 
-  const visibleAlerts = ALERTS.slice(0, shown).slice().reverse();
+  const visibleAlerts = ALERTS.slice(0, isInView ? shown : 1).slice().reverse();
 
   const togglePaused = () => {
-    if (paused) {
-      setShown(1);
-      setCycle((current) => current + 1);
-    }
     setPaused((current) => !current);
   };
 
@@ -89,7 +101,7 @@ export function AlertsFeed() {
           </h2>
         </div>
 
-        <div className={`${styles.stage} ${styles.reveal}`}>
+        <div ref={stageRef} className={`${styles.stage} ${styles.reveal}`}>
           <div className={styles.phone}>
             <span className={styles.sideButton} aria-hidden="true" />
             <div className={styles.screen}>

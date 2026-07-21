@@ -26,6 +26,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
+import KineticGrid from "@/components/ui/kinetic-grid";
 import { useLenis } from "@/lib/SmoothScroll";
 import styles from "./SpendingControls.module.css";
 
@@ -220,44 +221,52 @@ export function SpendingControls() {
                 })}
               </nav>
 
-              <div className={styles.scanner} aria-hidden="true">
-                <div className={styles.scannerAxis} />
-                <div className={styles.scannerTarget}>
-                  <span />
-                  <span />
-                  <span />
-                  <span />
-                </div>
-                <motion.div className={styles.scannerBeam} style={{ top: prefersReducedMotion ? "52%" : beamY }} />
+              <div
+                className={styles.scanner}
+                role="img"
+                aria-label="Interactive grid visualizing the current purchase authorization"
+              >
+                <KineticGrid className={styles.kineticGrid} tone={active.tone}>
+                  <div className={styles.scannerLayer} aria-hidden="true">
+                    <div className={styles.scannerAxis} />
+                    <div className={styles.scannerTarget}>
+                      <span />
+                      <span />
+                      <span />
+                      <span />
+                    </div>
+                    <motion.div className={styles.scannerBeam} style={{ top: prefersReducedMotion ? "52%" : beamY }} />
 
-                <motion.div
-                  className={styles.miniCard}
-                  style={{ rotate: prefersReducedMotion ? -3 : cardRotate, y: prefersReducedMotion ? 0 : cardY }}
-                >
-                  <div className={styles.cardTopline}>
-                    <span className={styles.orbitMark}><i /></span>
-                    <span>boov</span>
-                    <Sparkles size={15} />
+                    <motion.div
+                      className={styles.miniCard}
+                      style={{ rotate: prefersReducedMotion ? -3 : cardRotate, y: prefersReducedMotion ? 0 : cardY }}
+                    >
+                      <div className={styles.cardTopline}>
+                        <span className={styles.orbitMark}><i /></span>
+                        <span>boov</span>
+                        <Sparkles size={15} />
+                      </div>
+                      <div className={styles.cardChip} />
+                      <div className={styles.cardNumber}>•••• 0427</div>
+                      <div className={styles.cardBottom}>ESSENTIALS</div>
+                    </motion.div>
+
+                    <AnimatePresence initial={false}>
+                      <motion.div
+                        key={active.id}
+                        className={styles.merchantPing}
+                        initial={prefersReducedMotion ? false : { opacity: 0, y: 6, scale: 0.99 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={prefersReducedMotion ? undefined : { opacity: 0, y: -4, scale: 1 }}
+                        transition={{ duration: 0.16, ease: "easeOut" }}
+                      >
+                        <ActiveIcon size={17} aria-hidden="true" />
+                        <span>{active.merchant}</span>
+                        <strong>{active.amount}</strong>
+                      </motion.div>
+                    </AnimatePresence>
                   </div>
-                  <div className={styles.cardChip} />
-                  <div className={styles.cardNumber}>•••• 0427</div>
-                  <div className={styles.cardBottom}>ESSENTIALS</div>
-                </motion.div>
-
-                <AnimatePresence initial={false}>
-                  <motion.div
-                    key={active.id}
-                    className={styles.merchantPing}
-                    initial={prefersReducedMotion ? false : { opacity: 0, y: 6, scale: 0.99 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={prefersReducedMotion ? undefined : { opacity: 0, y: -4, scale: 1 }}
-                    transition={{ duration: 0.16, ease: "easeOut" }}
-                  >
-                    <ActiveIcon size={17} aria-hidden="true" />
-                    <span>{active.merchant}</span>
-                    <strong>{active.amount}</strong>
-                  </motion.div>
-                </AnimatePresence>
+                </KineticGrid>
               </div>
 
               <div className={styles.decision} aria-live="polite">

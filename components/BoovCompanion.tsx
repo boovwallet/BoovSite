@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { ArrowDown } from "lucide-react";
 import {
   AnimatePresence,
   motion,
@@ -104,84 +105,107 @@ export function BoovCompanion() {
       animate={ready ? { opacity: 1, x: 0, y: 0, rotate: 0 } : { opacity: 0, x: 110, y: 70, rotate: 12 }}
       transition={{ duration: prefersReducedMotion ? 0 : 0.9, ease: [0.16, 1, 0.3, 1] }}
     >
-      <motion.button
-        className={styles.button}
-        type="button"
-        aria-label="Say hello to Boov"
-        data-cursor
-        data-cursor-label="Say hi"
+      <motion.div
+        className={styles.stage}
         style={{ scale: prefersReducedMotion ? 0.82 : dockScale, y: prefersReducedMotion ? 0 : dockY }}
-        onClick={() => greet(true)}
-        onFocus={() => greet(false)}
-        onPointerEnter={() => greet(false)}
-        onPointerMove={handlePointerMove}
-        onPointerLeave={resetTilt}
       >
-        <span className={styles.aura} aria-hidden="true" />
-        <span className={styles.orbit} aria-hidden="true" />
-
-        <motion.span
-          className={styles.tiltStage}
-          style={{ rotateX: tiltX, rotateY: tiltY }}
+        <motion.button
+          className={styles.touchPrompt}
+          type="button"
+          data-cursor
+          data-cursor-label="Touch Boov"
+          disabled={speaking}
+          onClick={() => greet(true)}
+          initial={false}
+          animate={{ opacity: speaking ? 0 : 1, y: speaking ? 5 : 0 }}
+          whileHover={prefersReducedMotion ? undefined : { y: -2 }}
+          whileTap={prefersReducedMotion ? undefined : { scale: 0.96 }}
+          transition={{ duration: prefersReducedMotion ? 0 : 0.22, ease: [0.16, 1, 0.3, 1] }}
         >
+          <span>Touch me!</span>
+          <ArrowDown aria-hidden="true" strokeWidth={2.2} />
+        </motion.button>
+
+        <motion.button
+          className={styles.button}
+          type="button"
+          aria-label="Say hello to Boov"
+          data-cursor
+          data-cursor-label="Say hi"
+          onClick={() => greet(true)}
+          onFocus={() => greet(false)}
+          onPointerEnter={() => greet(false)}
+          onPointerMove={handlePointerMove}
+          onPointerLeave={resetTilt}
+        >
+          <span className={styles.aura} aria-hidden="true" />
+          <span className={styles.orbit} aria-hidden="true" />
+          <span className={styles.groundShadow} aria-hidden="true" />
+
           <motion.span
-            key={reaction}
-            className={styles.character}
-            animate={
-              reaction > 0 && !prefersReducedMotion
-                ? {
-                    y: [0, -9, 2, -6, 0],
-                    rotate: [0, 6, -5, 4, 0],
-                    scale: [1, 1.04, 0.99, 1.03, 1],
-                  }
-                : { y: 0, rotate: 0, scale: 1 }
-            }
-            transition={{ duration: 0.78, ease: [0.16, 1, 0.3, 1] }}
+            className={styles.tiltStage}
+            style={{ rotateX: tiltX, rotateY: tiltY }}
           >
-            <Image
-              className={styles.image}
-              src="/boov-home-companion.png"
-              alt=""
-              width={360}
-              height={360}
-              priority
-              sizes="(max-width: 600px) 112px, 176px"
-            />
+            <motion.span
+              key={reaction}
+              className={styles.character}
+              animate={
+                reaction > 0 && !prefersReducedMotion
+                  ? {
+                      x: [0, -2, 3, -3, 2, 0],
+                      y: [0, -8, -2, -7, -2, 0],
+                      rotate: [0, -5, 7, -6, 5, 0],
+                      scale: [1, 1.035, 1, 1.03, 1.01, 1],
+                    }
+                  : { x: 0, y: 0, rotate: 0, scale: 1 }
+              }
+              transition={{ duration: 1.05, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <Image
+                className={styles.image}
+                src="/boov-home-companion.png"
+                alt=""
+                width={360}
+                height={360}
+                priority
+                sizes="(max-width: 600px) 112px, 176px"
+              />
+            </motion.span>
           </motion.span>
-        </motion.span>
 
-        <AnimatePresence>
-          {speaking ? (
-            <motion.span
-              className={styles.bubble}
-              role="status"
-              aria-live="polite"
-              initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.78, x: 12, y: 8 }}
-              animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, x: 6, y: 4 }}
-              transition={{ duration: prefersReducedMotion ? 0 : 0.26, ease: [0.16, 1, 0.3, 1] }}
-            >
-              {GREETINGS[greetingIndex]}
-            </motion.span>
-          ) : null}
-        </AnimatePresence>
+          <AnimatePresence>
+            {speaking ? (
+              <motion.span
+                className={styles.bubble}
+                role="status"
+                aria-live="polite"
+                initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.78, x: 12, y: 8 }}
+                animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, x: 6, y: 4 }}
+                transition={{ duration: prefersReducedMotion ? 0 : 0.26, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {GREETINGS[greetingIndex]}
+              </motion.span>
+            ) : null}
+          </AnimatePresence>
 
-        <AnimatePresence>
-          {speaking && !prefersReducedMotion ? (
-            <motion.span
-              key={`laugh-${reaction}`}
-              className={styles.laugh}
-              aria-hidden="true"
-              initial={{ opacity: 0, y: 8, rotate: -8 }}
-              animate={{ opacity: [0, 1, 1, 0], y: [8, 0, -12, -22], rotate: [-8, 4, -4, 8] }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.9, ease: "easeOut" }}
-            >
-              ha!
-            </motion.span>
-          ) : null}
-        </AnimatePresence>
-      </motion.button>
+          <AnimatePresence>
+            {speaking && !prefersReducedMotion ? (
+              <motion.span
+                key={`laugh-${reaction}`}
+                className={styles.laugh}
+                aria-hidden="true"
+                initial={{ opacity: 0, y: 8, rotate: -8 }}
+                animate={{ opacity: [0, 1, 1, 0], y: [8, 0, -12, -22], rotate: [-8, 4, -4, 8] }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.9, ease: "easeOut" }}
+              >
+                ha!
+              </motion.span>
+            ) : null}
+          </AnimatePresence>
+        </motion.button>
+      </motion.div>
     </motion.aside>
   );
 }

@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { NAV_LINKS } from "@/content/homepage";
 import { useMagnetic } from "@/lib/hooks/useMagnetic";
-import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
+import { SkyToggle } from "@/components/ui/sky-toggle";
 import styles from "./SiteNav.module.css";
 
 function OrbitMark() {
@@ -54,9 +54,7 @@ export function SiteNav() {
         </nav>
 
         <div className={styles.actions}>
-          {/* No static aria-label here — the toggler labels itself dynamically
-              ("Switch to dark/light theme"). */}
-          <AnimatedThemeToggler className={styles.theme} data-cursor data-cursor-label="Theme" />
+          <SkyToggle className={styles.skyToggle} data-cursor data-cursor-label="Theme" />
           <a ref={ctaRef} href="/#join" className={styles.cta} data-cursor data-cursor-label="Join">
             Join waitlist
           </a>

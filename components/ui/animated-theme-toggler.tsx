@@ -27,6 +27,8 @@ interface AnimatedThemeTogglerProps extends React.ComponentPropsWithoutRef<"butt
   theme?: "light" | "dark"
   /** Called on toggle. Pair with `theme` for controlled usage. */
   onThemeChange?: (theme: "light" | "dark") => void
+  /** Optional visual treatment while this component retains theme behavior. */
+  renderVisual?: (isDark: boolean) => React.ReactNode
 }
 
 function polygonCollapsed(point: string, vertexCount: number): string {
@@ -157,6 +159,7 @@ export const AnimatedThemeToggler = ({
   fromCenter = false,
   theme,
   onThemeChange,
+  renderVisual,
   ...props
 }: AnimatedThemeTogglerProps) => {
   const shape = variant ?? "circle"
@@ -304,7 +307,7 @@ export const AnimatedThemeToggler = ({
       aria-pressed={isDark}
       {...props}
     >
-      {isDark ? <Sun /> : <Moon />}
+      {renderVisual ? renderVisual(isDark) : isDark ? <Sun /> : <Moon />}
       <span className="sr-only">
         {isDark ? "Switch to light theme" : "Switch to dark theme"}
       </span>
