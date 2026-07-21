@@ -186,7 +186,7 @@ a {
   position: absolute;
   z-index: 6;
   inset: 0;
-  padding: 1px;
+  padding: var(--card-edge-width, 2.5px);
   border-radius: inherit;
   background: linear-gradient(
     90deg,
@@ -198,8 +198,8 @@ a {
     var(--color-1)
   );
   background-size: 200% 100%;
-  opacity: var(--card-edge-opacity, 0.38);
-  animation: boov-rainbow-drift var(--card-edge-speed, 14s) linear infinite;
+  opacity: var(--card-edge-opacity, 1);
+  animation: boov-rainbow-drift var(--card-edge-speed, 6s) linear infinite;
   pointer-events: none;
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
