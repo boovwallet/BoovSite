@@ -175,7 +175,7 @@ function Chip() {
 
 function CardFront({ opacity }: { opacity: number }) {
   return (
-    <div className={`${styles.cardFace} ${styles.cardFront}`} style={{ opacity }} aria-hidden="true">
+    <div className={`${styles.cardFace} ${styles.cardFront} boov-card-edge`} style={{ opacity }} aria-hidden="true">
       <div className={styles.cardGrain} />
       <CardRibbon />
 
@@ -212,6 +212,8 @@ function CardBack({ opacity }: { opacity: number }) {
     <>
       {/* eslint-disable-next-line @next/next/no-img-element -- Keep the SVG as one 3D compositor texture. */}
       <img
+        // No rim here: this face is an <img>, and replaced elements do not
+        // render ::after, so the class would silently do nothing.
         className={`${styles.cardFace} ${styles.cardBack}`}
         src="/boov-card-back.svg"
         alt=""

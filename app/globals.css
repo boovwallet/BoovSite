@@ -168,6 +168,49 @@ a {
     radial-gradient(120% 120% at 20% 0%, var(--bone-2) 0%, var(--bone) 45%, var(--sand) 100%);
 }
 
+/* ---------- Member-card rainbow rim ----------------------------------- */
+
+@keyframes boov-rainbow-drift {
+  to {
+    background-position: 200% 50%;
+  }
+}
+
+/* A slow rainbow lit along the card's edge, using the same five stops as the
+   reserve button so the two read as one family.
+   Drawn INSIDE the element via a padding-box mask rather than as an outset
+   ring: every card face sets overflow:hidden, which would clip an outset one.
+   Tuned per instance with --card-edge-opacity / --card-edge-speed. */
+.boov-card-edge::after {
+  content: "";
+  position: absolute;
+  z-index: 6;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    var(--color-1),
+    var(--color-2),
+    var(--color-3),
+    var(--color-4),
+    var(--color-5),
+    var(--color-1)
+  );
+  background-size: 200% 100%;
+  opacity: var(--card-edge-opacity, 0.38);
+  animation: boov-rainbow-drift var(--card-edge-speed, 14s) linear infinite;
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
 /* Hide the OS cursor only when the custom cursor is active. */
 html.has-custom-cursor,
 html.has-custom-cursor * {

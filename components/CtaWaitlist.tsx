@@ -21,7 +21,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function CardFront() {
   return (
-    <div className={`${styles.cardFace} ${styles.cardFront}`} aria-hidden="true">
+    <div className={`${styles.cardFace} ${styles.cardFront} boov-card-edge`} aria-hidden="true">
       <span className={styles.cardRibbon} />
       <div className={styles.cardTopline}>
         <span className={styles.cardWordmark}>boov</span>
@@ -207,7 +207,7 @@ export function CtaWaitlist() {
               >
                 <CardFront />
 
-                <div className={`${styles.cardFace} ${styles.cardBack}`}>
+                <div className={`${styles.cardFace} ${styles.cardBack} boov-card-edge`}>
                   <AnimatePresence mode="wait" initial={false}>
                     {submitted ? (
                       <motion.div

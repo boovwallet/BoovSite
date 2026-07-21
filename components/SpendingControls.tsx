@@ -142,7 +142,7 @@ function MemberCard({
 
   return (
     <motion.div
-      className={styles.card}
+      className={`${styles.card} boov-card-edge`}
       layout
       layoutId="boov-authorization-card"
       role="img"
