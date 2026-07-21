@@ -320,7 +320,9 @@
 
 .label {
   display: block;
-  margin-bottom: 16px;
+  /* Boov stands on the submit button and reaches ~78px above it with his
+     speech bubble, so the copy has to clear that or he sits on the words. */
+  margin-bottom: 78px;
   color: #fff;
   font-family: var(--font-sniglet), system-ui, sans-serif;
   font-size: clamp(1.05rem, 2vw, 1.35rem);

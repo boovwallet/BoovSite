@@ -267,7 +267,7 @@ export function CtaWaitlist() {
                             armed={phase === "ready"}
                             originRef={fieldRef}
                             disabled={!formAvailable}
-                            size={62}
+                            size={52}
                           />
                         </div>
                         <AnimatePresence initial={false} mode="wait">
