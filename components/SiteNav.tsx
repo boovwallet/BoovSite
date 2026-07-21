@@ -29,7 +29,7 @@ export function SiteNav() {
   // The whole story lives on one page, so the nav CTA is an in-page jump.
   // Driving it through Lenis keeps the smooth-scroll feel the rest of the
   // site has, which a bare hash link would bypass.
-  const jumpToJoin = () => {
+  const jumpToUpdates = () => {
     const target = document.getElementById("join");
     if (!target) return;
     if (lenis) lenis.scrollTo(target, { offset: -20 });
@@ -71,14 +71,14 @@ export function SiteNav() {
           <ShimmerButton
             ref={ctaRef}
             className={styles.cta}
-            onClick={jumpToJoin}
+            onClick={jumpToUpdates}
             shimmerColor="#ddd4f7"
             shimmerDuration="3.4s"
             background="var(--accent-deep)"
             data-cursor
-            data-cursor-label="Join"
+            data-cursor-label="Updates"
           >
-            Join waitlist
+            Stay updated
           </ShimmerButton>
         </div>
       </div>
