@@ -52,15 +52,34 @@ export function CtaWaitlist() {
   const [error, setError] = useState(false);
   const [phase, setPhase] = useState<HandoffPhase>("rest");
   const [sectionActive, setSectionActive] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mobileQuery = window.matchMedia("(max-width: 640px)");
+    const updateMobileState = () => setIsMobile(mobileQuery.matches);
+
+    updateMobileState();
+    mobileQuery.addEventListener("change", updateMobileState);
+    return () => mobileQuery.removeEventListener("change", updateMobileState);
+  }, []);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"],
   });
   const cardX = useTransform(scrollYProgress, [0, 0.18, 0.42, 1], [-150, -150, 0, 0]);
-  const cardY = useTransform(scrollYProgress, [0, 0.18, 0.42, 1], [30, 30, -28, -28]);
+  const cardY = useTransform(
+    scrollYProgress,
+    [0, 0.18, 0.42, 1],
+    isMobile ? [30, 30, 8, 8] : [30, 30, -28, -28],
+  );
   const cardScale = useTransform(scrollYProgress, [0, 0.18, 0.42, 1], [0.7, 0.7, 1, 1]);
-  const cardRotateY = useTransform(scrollYProgress, [0, 0.42, 0.72, 1], [0, 0, 180, 180]);
+  const flipEnd = isMobile ? 0.68 : 0.72;
+  const cardRotateY = useTransform(
+    scrollYProgress,
+    [0, 0.42, flipEnd, 1],
+    [0, 0, 180, 180],
+  );
 
   useMotionValueEvent(scrollYProgress, "change", (progress) => {
     if (prefersReducedMotion) {
@@ -70,7 +89,7 @@ export function CtaWaitlist() {
 
     const nextPhase: HandoffPhase = progress < 0.18
       ? "approach"
-      : progress < 0.72
+      : progress < flipEnd
         ? "handoff"
         : "ready";
     setPhase((current) => current === nextPhase ? current : nextPhase);
