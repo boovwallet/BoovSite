@@ -12,8 +12,8 @@ import styles from "./BoovExperience.module.css";
 
 const EDGE_LAYERS = Array.from({ length: 17 }, (_, index) => index - 8);
 const HERO_WORDS = ["Tap To\nChange", "BOOV"];
-const HERO_ENTRANCE_SECONDS = 0.55;
-const HERO_HOLD_SECONDS = 0.45;
+const HERO_ENTRANCE_SECONDS = 0.53;
+const HERO_HOLD_SECONDS = 0.43;
 const HERO_SETTLE_MILLISECONDS = 360;
 
 // Scroll-progress boundaries mapped to the card animation's own keyframes:
