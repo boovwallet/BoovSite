@@ -62,6 +62,11 @@ export const metadata: Metadata = {
 // before first paint so returning visitors do not see a theme flash.
 const themeScript = `try{document.documentElement.classList.toggle("dark",localStorage.getItem("theme")!=="light")}catch(e){document.documentElement.classList.add("dark")}`;
 
+// Disable browser scroll restoration before hydration. Doing this in a client
+// effect is too late in Safari and Chromium: they can restore a stale scroll
+// position first, briefly mounting the experience on an arbitrary chapter.
+const initialScrollScript = `try{history.scrollRestoration="manual";if(location.pathname==="/"&&(location.hash===""||location.hash==="#alerts")){const reset=()=>scrollTo(0,0);reset();addEventListener("pageshow",reset,{once:true});addEventListener("load",()=>{reset();requestAnimationFrame(()=>requestAnimationFrame(reset))},{once:true})}}catch(e){}`;
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ViewTransitions>
@@ -71,6 +76,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         className={`${sniglet.variable} ${poppins.variable} ${spaceGrotesk.variable} dark`}
       >
         <head>
+          <script dangerouslySetInnerHTML={{ __html: initialScrollScript }} />
           <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         </head>
         <body>

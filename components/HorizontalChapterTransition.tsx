@@ -18,12 +18,13 @@ import { VapourScrollText } from "@/components/ui/vapour-scroll-text";
 import styles from "./HorizontalChapterTransition.module.css";
 
 const FEED_DELAY_MS = 1600;
-const MAX_VISIBLE_ALERTS = 4;
+const INITIAL_VISIBLE_ALERTS = 2;
+const MAX_VISIBLE_ALERTS = 5;
 
 export function HorizontalChapterTransition() {
   const sectionRef = useRef<HTMLElement>(null);
   const prefersReducedMotion = useReducedMotion();
-  const [shownAlerts, setShownAlerts] = useState(1);
+  const [shownAlerts, setShownAlerts] = useState(INITIAL_VISIBLE_ALERTS);
   const [feedPaused, setFeedPaused] = useState(false);
   const [reportActive, setReportActive] = useState(false);
   const pointerX = useMotionValue(0);
@@ -57,7 +58,7 @@ export function HorizontalChapterTransition() {
   );
 
   useEffect(() => {
-    if (reportActive) setShownAlerts(1);
+    if (reportActive) setShownAlerts(INITIAL_VISIBLE_ALERTS);
   }, [reportActive]);
 
   useEffect(() => {
