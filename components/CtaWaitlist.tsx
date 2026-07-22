@@ -74,10 +74,11 @@ export function CtaWaitlist() {
     isMobile ? [30, 30, 8, 8] : [30, 30, -28, -28],
   );
   const cardScale = useTransform(scrollYProgress, [0, 0.18, 0.42, 1], [0.7, 0.7, 1, 1]);
-  const flipEnd = isMobile ? 0.68 : 0.72;
+  const flipStart = isMobile ? 0.38 : 0.42;
+  const flipEnd = isMobile ? 0.64 : 0.72;
   const cardRotateY = useTransform(
     scrollYProgress,
-    [0, 0.42, flipEnd, 1],
+    [0, flipStart, flipEnd, 1],
     [0, 0, 180, 180],
   );
 
