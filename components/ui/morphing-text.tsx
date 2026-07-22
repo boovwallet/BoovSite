@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef } from "react"
 
 import { clsx } from "clsx"
 
-const morphTime = 1.5
+const morphTime = 0.75
 const cooldownTime = 0.5
 
 interface MorphingTextOptions {
