@@ -1,7 +1,7 @@
 .section {
   position: relative;
   z-index: 2;
-  height: 340svh;
+  height: 440svh;
   margin-top: -20svh;
   overflow: clip;
   background: transparent;
@@ -159,7 +159,7 @@
 .cardInteraction {
   position: absolute;
   z-index: 4;
-  top: 58%;
+  top: 54%;
   left: 62%;
   width: min(450px, 40vw);
   aspect-ratio: 85.6 / 53.98;
@@ -299,7 +299,7 @@
 .terminal {
   position: absolute;
   z-index: 3;
-  top: 58%;
+  top: 54%;
   left: 27%;
   display: grid;
   width: clamp(74px, 7.2vw, 96px);
@@ -342,7 +342,7 @@
 .connection {
   position: absolute;
   z-index: 2;
-  top: 58%;
+  top: 54%;
   left: calc(27% + clamp(37px, 3.6vw, 48px));
   width: clamp(58px, 9vw, 126px);
   height: 1px;
@@ -463,6 +463,26 @@
   will-change: left, transform;
 }
 
+.guideMascot::before {
+  position: absolute;
+  z-index: 0;
+  bottom: -5px;
+  left: 50%;
+  width: 86px;
+  height: 36px;
+  border: 1px solid rgba(217, 207, 242, 0.46);
+  border-radius: 50%;
+  box-shadow: 0 0 22px rgba(184, 167, 232, 0.2);
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) scale(0.72);
+}
+
+.guideMascot[data-arrived][data-phase="result"]::before {
+  animation: guideClickPulse 2.2s ease-out infinite;
+}
+
 .guideMascot:focus-visible {
   border-radius: 7px;
   outline: 2px solid #d9cff2;
@@ -479,8 +499,11 @@
   z-index: 2;
   bottom: calc(100% - 4px);
   left: 50%;
+  display: inline-flex;
   width: max-content;
   max-width: 220px;
+  align-items: center;
+  gap: 6px;
   padding: 8px 11px;
   border: 1px solid rgba(9, 19, 45, 0.2);
   border-radius: 5px;
@@ -494,6 +517,12 @@
   text-align: center;
   text-wrap: balance;
   transform: translateX(-50%);
+}
+
+.guideBubble > svg {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
 }
 
 .guideBubble::after {
@@ -548,18 +577,26 @@
   transform-origin: 50% 100%;
 }
 
-/* The bubble only speaks once he is standing on the tab row. Opacity only —
-   the position variants above own the transform. */
-.guideMascot .guideBubble {
-  opacity: 0;
-  transition: opacity 0.34s ease 0.12s;
-}
+@keyframes guideClickPulse {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.72);
+  }
 
-.guideMascot[data-arrived] .guideBubble {
-  opacity: 1;
+  24% {
+    opacity: 0.72;
+  }
+
+  72%,
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) scale(1.2);
+  }
 }
 
 .tabsList {
+  position: relative;
+  z-index: 2;
   display: grid;
   width: 100%;
   height: auto;
@@ -572,6 +609,60 @@
   background: rgba(8, 11, 29, 0.72);
   color: #9188a4;
   backdrop-filter: blur(14px);
+}
+
+.travelTrack {
+  position: absolute;
+  z-index: 3;
+  right: 10%;
+  bottom: 52px;
+  left: 10%;
+  display: flex;
+  height: 9px;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.travelTrack::before,
+.travelProgress {
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: 1px;
+  content: "";
+}
+
+.travelTrack::before {
+  background: rgba(184, 167, 232, 0.2);
+}
+
+.travelProgress {
+  background: #b8a7e8;
+  box-shadow: 0 0 12px rgba(184, 167, 232, 0.46);
+  transform-origin: left center;
+}
+
+.travelTrack i {
+  position: relative;
+  z-index: 1;
+  width: 7px;
+  height: 7px;
+  border: 1px solid rgba(184, 167, 232, 0.48);
+  border-radius: 50%;
+  background: #080b1d;
+  transition: background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+
+.travelTrack i[data-state="complete"] {
+  border-color: #b8a7e8;
+  background: #b8a7e8;
+}
+
+.travelTrack i[data-state="current"] {
+  border-color: #e2d9fa;
+  background: #e2d9fa;
+  box-shadow: 0 0 0 4px rgba(184, 167, 232, 0.14), 0 0 14px rgba(184, 167, 232, 0.5);
 }
 
 .tabTrigger {
@@ -629,7 +720,7 @@
 
 @media (max-width: 900px) {
   .section {
-    height: 300svh;
+    height: 420svh;
     margin-top: 0;
   }
 
@@ -679,25 +770,25 @@
   }
 
   .cardInteraction {
-    top: 54%;
+    top: 50%;
     left: 50%;
     width: min(310px, 78vw);
   }
 
   .terminal {
-    top: 57%;
+    top: 53%;
     left: 9%;
     width: clamp(58px, 16vw, 72px);
   }
 
   .connection {
-    top: 57%;
+    top: 53%;
     left: calc(9% + clamp(29px, 8vw, 36px));
     width: clamp(34px, 11vw, 54px);
   }
 
   .ruleLabel {
-    bottom: 1%;
+    bottom: clamp(64px, 16%, 96px);
     left: 2%;
     font-size: 0.7rem;
   }
@@ -729,6 +820,12 @@
 
   .guideDock {
     padding-top: 88px;
+  }
+
+  .travelTrack {
+    right: 9%;
+    bottom: 52px;
+    left: 9%;
   }
 
   .guideMascot {
@@ -794,9 +891,20 @@
     top: 55%;
   }
 
-  .ruleLabel,
+  .ruleLabel {
+    top: 4px;
+    right: 2%;
+    bottom: auto;
+    left: auto;
+  }
+
+  .ruleLabel::before {
+    right: calc(100% + 12px);
+    left: auto;
+  }
+
   .resultLabel {
-    bottom: 2%;
+    display: none;
   }
 
   .guideDock {
@@ -828,5 +936,14 @@
 
   .tabTrigger {
     transition: none;
+  }
+
+  .travelTrack i {
+    transition: none;
+  }
+
+  .guideMascot::before,
+  .guideBubble {
+    animation: none !important;
   }
 }
