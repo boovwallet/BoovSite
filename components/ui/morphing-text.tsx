@@ -6,6 +6,11 @@ import { clsx } from "clsx"
 
 const morphTime = 1.5
 const cooldownTime = 0.5
+const thresholdFilter = 'url("#threshold") blur(0.6px)'
+// A suspended tab or a busy mobile main thread can hand requestAnimationFrame
+// a very large delta. Cap the amount of animation time one frame can consume
+// so the opening words cannot skip straight to the final state.
+const maxFrameDelta = 1 / 20
 
 interface MorphingTextOptions {
   /** Seconds the first text takes to resolve out of blur. 0 shows it at once. */
@@ -43,14 +48,14 @@ const useMorphingText = (
       if (!current1 || !current2) return
 
       current2.style.filter = `blur(${Math.min(8 / fraction - 8, 100)}px)`
-      current2.style.opacity = `${Math.pow(fraction, 0.4) * 100}%`
+      current2.style.opacity = `${Math.pow(fraction, 0.4)}`
 
       const invertedFraction = 1 - fraction
       current1.style.filter = `blur(${Math.min(
         8 / invertedFraction - 8,
         100
       )}px)`
-      current1.style.opacity = `${Math.pow(invertedFraction, 0.4) * 100}%`
+      current1.style.opacity = `${Math.pow(invertedFraction, 0.4)}`
 
       current1.textContent = texts[textIndexRef.current % texts.length]
       current2.textContent = texts[(textIndexRef.current + 1) % texts.length]
@@ -71,9 +76,9 @@ const useMorphingText = (
       current1.style.filter = `blur(${
         fraction > 0 ? Math.min(8 / fraction - 8, 100) : 100
       }px)`
-      current1.style.opacity = `${Math.pow(fraction, 0.4) * 100}%`
+      current1.style.opacity = `${Math.pow(fraction, 0.4)}`
       current2.style.filter = "none"
-      current2.style.opacity = "0%"
+      current2.style.opacity = "0"
     },
     [texts]
   )
@@ -85,9 +90,9 @@ const useMorphingText = (
     if (!current1 || !current2) return
 
     current1.style.filter = "none"
-    current1.style.opacity = "0%"
+    current1.style.opacity = "0"
     current2.style.filter = "none"
-    current2.style.opacity = "100%"
+    current2.style.opacity = "1"
     current2.textContent = text
   }, [])
 
@@ -114,9 +119,9 @@ const useMorphingText = (
     const [current1, current2] = [text1Ref.current, text2Ref.current]
     if (current1 && current2) {
       current2.style.filter = "none"
-      current2.style.opacity = "100%"
+      current2.style.opacity = "1"
       current1.style.filter = "none"
-      current1.style.opacity = "0%"
+      current1.style.opacity = "0"
     }
   }, [])
 
@@ -130,7 +135,10 @@ const useMorphingText = (
       animationFrameId = requestAnimationFrame(animate)
 
       const newTime = new Date()
-      const dt = (newTime.getTime() - timeRef.current.getTime()) / 1000
+      const dt = Math.min(
+        maxFrameDelta,
+        (newTime.getTime() - timeRef.current.getTime()) / 1000
+      )
       timeRef.current = newTime
 
       // Opening entrance: the first text condenses out of blur.
@@ -205,11 +213,17 @@ const Texts: React.FC<Omit<MorphingTextProps, "className">> = ({
       <span
         className="absolute inset-x-0 top-0 m-auto inline-block w-full"
         ref={text1Ref}
-      />
+        style={{ filter: "blur(100px)", opacity: 0 }}
+      >
+        {texts[0]}
+      </span>
       <span
         className="absolute inset-x-0 top-0 m-auto inline-block w-full"
         ref={text2Ref}
-      />
+        style={{ filter: "none", opacity: 0 }}
+      >
+        {texts[1 % texts.length]}
+      </span>
     </>
   )
 }
@@ -221,7 +235,7 @@ const SvgFilters: React.FC = () => (
     preserveAspectRatio="xMidYMid slice"
   >
     <defs>
-      <filter id="threshold">
+      <filter id="threshold" colorInterpolationFilters="sRGB">
         <feColorMatrix
           in="SourceGraphic"
           type="matrix"
@@ -246,19 +260,26 @@ export const MorphingText: React.FC<MorphingTextProps> = ({
   loop,
   onComplete,
 }) => (
-  <div
-    className={clsx(
-      "relative mx-auto w-full text-center leading-none [filter:url(#threshold)_blur(0.6px)]",
-      className
-    )}
-  >
-    <Texts
-      texts={texts}
-      entrance={entrance}
-      hold={hold}
-      loop={loop}
-      onComplete={onComplete}
-    />
+  <>
+    {/* Keep the definition outside the filtered element. Mobile WebKit can
+        fail a fragment filter when its SVG lives inside the element consuming
+        it; rendering it first as a sibling preserves the desktop threshold
+        effect on mobile instead of falling back to a different animation. */}
     <SvgFilters />
-  </div>
+    <div
+      className={clsx(
+        "relative mx-auto w-full text-center leading-none",
+        className
+      )}
+      style={{ filter: thresholdFilter, WebkitFilter: thresholdFilter }}
+    >
+      <Texts
+        texts={texts}
+        entrance={entrance}
+        hold={hold}
+        loop={loop}
+        onComplete={onComplete}
+      />
+    </div>
+  </>
 )
