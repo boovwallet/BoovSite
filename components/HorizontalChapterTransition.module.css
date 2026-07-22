@@ -423,8 +423,8 @@
 
 @media (max-width: 760px) {
   .section {
-    height: 160svh;
-    min-height: 960px;
+    height: 210svh;
+    min-height: 1500px;
   }
 
   .panelGrid {
@@ -432,7 +432,7 @@
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr);
     gap: 24px;
-    padding: 104px 0 58px;
+    padding: 106px 0 64px;
   }
 
   .copy {
@@ -457,7 +457,7 @@
   }
 
   .phonePreview {
-    width: min(66vw, 310px);
+    width: min(60vw, 270px);
     align-self: center;
   }
 
@@ -474,7 +474,7 @@
   }
 
   .display {
-    font-size: clamp(2.8rem, 13vw, 3.65rem);
+    font-size: clamp(2.65rem, 12vw, 3.3rem);
   }
 
   .signalLine p {
@@ -482,7 +482,7 @@
   }
 
   .phonePreview {
-    width: min(72vw, 280px);
+    width: min(62vw, 250px);
     border-radius: 34px;
   }
 
@@ -497,6 +497,45 @@
 
   .previewAlert b {
     grid-column: 2;
+  }
+}
+
+@media (max-width: 900px) and (max-height: 600px) and (orientation: landscape) {
+  .section {
+    height: 300svh;
+    min-height: 1100px;
+  }
+
+  .panelGrid {
+    width: calc(100% - 44px);
+    grid-template-columns: minmax(0, 1fr) minmax(210px, 0.72fr);
+    grid-template-rows: 1fr;
+    gap: 24px;
+    padding: 76px 0 34px;
+  }
+
+  .eyebrow {
+    margin-bottom: 8px;
+  }
+
+  .display {
+    font-size: clamp(2.2rem, 6vw, 3.1rem);
+  }
+
+  .signalLine {
+    margin-top: 12px;
+  }
+
+  .cardArtifact {
+    width: min(42vw, 330px);
+  }
+
+  .phonePreview {
+    width: min(24vw, 190px);
+  }
+
+  .progress {
+    bottom: 10px;
   }
 }
 

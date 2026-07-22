@@ -197,11 +197,22 @@ function FluidPlane() {
 export default function FluidBackground() {
   const prefersReducedMotion = useReducedMotion();
   const [mounted, setMounted] = useState(false);
+  const [useStaticBackground, setUseStaticBackground] = useState(false);
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    const staticQuery = window.matchMedia(
+      "(max-width: 900px), (hover: none), (pointer: coarse)",
+    );
+    const update = () => setUseStaticBackground(staticQuery.matches);
+    update();
+    setMounted(true);
+    staticQuery.addEventListener("change", update);
+    return () => staticQuery.removeEventListener("change", update);
+  }, []);
 
-  // Static fallback gradient under reduced motion.
-  if (prefersReducedMotion || !mounted) {
+  // Phones keep the same palette without continuously compositing WebGL
+  // behind several sticky/canvas chapters.
+  if (prefersReducedMotion || useStaticBackground || !mounted) {
     return <div className="boov-fluid-fallback" aria-hidden="true" />;
   }
 

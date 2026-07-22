@@ -1,7 +1,7 @@
 "use client";
 
 import { type MotionValue, useReducedMotion } from "framer-motion";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import styles from "./vapour-scroll-text.module.css";
 
@@ -49,6 +49,17 @@ export function VapourScrollText({
   const colorRef = useRef("rgb(221, 212, 247)");
   const frameRef = useRef(0);
   const prefersReducedMotion = useReducedMotion();
+  const [useStaticText, setUseStaticText] = useState(false);
+
+  useEffect(() => {
+    const staticQuery = window.matchMedia(
+      "(max-width: 760px), (max-width: 900px) and (max-height: 600px), (hover: none), (pointer: coarse)",
+    );
+    const update = () => setUseStaticText(staticQuery.matches);
+    update();
+    staticQuery.addEventListener("change", update);
+    return () => staticQuery.removeEventListener("change", update);
+  }, []);
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -196,6 +207,14 @@ export function VapourScrollText({
     },
     [],
   );
+
+  if (useStaticText) {
+    return (
+      <div className={cn(styles.root, styles.staticRoot, className)}>
+        {lines.map((line) => <span key={line}>{line}</span>)}
+      </div>
+    );
+  }
 
   return (
     <div ref={rootRef} className={cn(styles.root, className)}>

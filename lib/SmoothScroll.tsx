@@ -15,14 +15,18 @@ export function useLenis() {
  * Buttery momentum scrolling (Lenis) driving GSAP ScrollTrigger from a single
  * source of truth. Lenis updates the real window scroll position, so
  * framer-motion's useScroll (used by the card scene) keeps working too.
- * Disabled entirely under reduced motion — native scroll is used instead.
+ * Disabled entirely under reduced motion and on touch-sized devices, where
+ * the platform's native momentum is both smoother and more predictable.
  */
 export function SmoothScroll({ children }: { children: ReactNode }) {
   const prefersReducedMotion = useReducedMotion();
   const [lenis, setLenis] = useState<Lenis | null>(null);
 
   useEffect(() => {
-    if (prefersReducedMotion) return;
+    const nativeScrollQuery = window.matchMedia(
+      "(max-width: 900px), (hover: none), (pointer: coarse)",
+    );
+    if (prefersReducedMotion || nativeScrollQuery.matches) return;
 
     const instance = new Lenis({
       duration: 1.1,

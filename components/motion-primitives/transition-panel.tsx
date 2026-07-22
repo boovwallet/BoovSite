@@ -30,7 +30,7 @@ export function TransitionPanel({
     <div className={cn("relative", className)}>
       <AnimatePresence
         initial={false}
-        mode="popLayout"
+        mode="wait"
         custom={motionProps.custom}
       >
         <motion.div

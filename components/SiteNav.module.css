@@ -6,11 +6,14 @@
   left: 0;
   display: flex;
   justify-content: center;
+  isolation: isolate;
   padding: 18px 24px;
   transition: padding 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .inner {
+  position: relative;
+  z-index: 1;
   display: flex;
   width: 100%;
   max-width: 1200px;
@@ -144,10 +147,31 @@
 
 @media (max-width: 480px) {
   .nav {
-    padding: 12px 14px;
+    padding: 10px;
+  }
+
+  .inner {
+    min-width: 0;
+    gap: 10px;
+    padding: 9px 10px 9px 14px;
   }
 
   .brand span {
     display: none;
+  }
+
+  .brand {
+    flex: 0 0 auto;
+  }
+
+  .actions {
+    min-width: 0;
+    gap: 8px;
+  }
+
+  .cta {
+    min-height: 44px;
+    padding: 10px 14px;
+    font-size: 0.74rem;
   }
 }

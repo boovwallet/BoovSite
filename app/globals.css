@@ -95,6 +95,7 @@ html {
 
 body {
   margin: 0;
+  overflow-x: clip;
   background: var(--bone, #f2eee5);
   color: var(--ink-warm, #221b30);
   font-family: var(--font-space-grotesk), system-ui, sans-serif;
