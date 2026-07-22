@@ -8,6 +8,7 @@ import {
   useMotionValueEvent,
   useReducedMotion,
   useScroll,
+  useSpring,
   useTransform,
 } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
@@ -72,19 +73,28 @@ export function CtaWaitlist() {
     offset: ["start end", "end end"],
   });
   const scrollYProgress = isMobile ? mobileScrollYProgress : desktopScrollYProgress;
+  const smoothMobileScrollYProgress = useSpring(mobileScrollYProgress, {
+    stiffness: 170,
+    damping: 32,
+    mass: 0.28,
+    restDelta: 0.0005,
+  });
+  const visualScrollYProgress = isMobile
+    ? smoothMobileScrollYProgress
+    : desktopScrollYProgress;
   const cardTravelRange = isMobile ? [0.08, 0.28, 1] : [0, 0.18, 0.42, 1];
   const cardX = useTransform(
-    scrollYProgress,
+    visualScrollYProgress,
     cardTravelRange,
     isMobile ? [-150, 0, 0] : [-150, -150, 0, 0],
   );
   const cardY = useTransform(
-    scrollYProgress,
+    visualScrollYProgress,
     cardTravelRange,
     isMobile ? [30, 8, 8] : [30, 30, -28, -28],
   );
   const cardScale = useTransform(
-    scrollYProgress,
+    visualScrollYProgress,
     cardTravelRange,
     isMobile ? [0.7, 1, 1] : [0.7, 0.7, 1, 1],
   );
@@ -92,7 +102,7 @@ export function CtaWaitlist() {
   const flipStart = isMobile ? 0.28 : 0.42;
   const flipEnd = isMobile ? 0.42 : 0.72;
   const cardRotateY = useTransform(
-    scrollYProgress,
+    visualScrollYProgress,
     [0, flipStart, flipEnd, 1],
     [0, 0, 180, 180],
   );

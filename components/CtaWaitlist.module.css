@@ -535,10 +535,20 @@
     max-width: 480px;
     min-width: 0;
     margin: 0 auto;
+    filter: none;
   }
 
   .flipCardMotion {
     aspect-ratio: 620 / 391;
+  }
+
+  .boovImageWrap,
+  .cardRibbon {
+    filter: none;
+  }
+
+  .cardFace {
+    contain: paint;
   }
 
   .cardFront {

@@ -212,6 +212,16 @@ a {
   mask-composite: exclude;
 }
 
+/* Mobile Safari has to re-rasterize animated masks while their card is also
+   rotating in 3D. Keep the branded edge, but freeze its decorative drift on
+   touch devices so the meaningful card motion gets the frame budget. */
+@media (max-width: 640px), (hover: none) and (pointer: coarse) {
+  .boov-card-edge::after {
+    animation: none;
+    background-position: 50% 0;
+  }
+}
+
 /* Hide the OS cursor only when the custom cursor is active. */
 html.has-custom-cursor,
 html.has-custom-cursor * {
