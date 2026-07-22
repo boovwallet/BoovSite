@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   AnimatePresence,
   motion,
@@ -18,7 +18,6 @@ import {
   Banknote,
   Check,
   Droplets,
-  MousePointerClick,
   Nfc,
   ShieldCheck,
   ShoppingBasket,
@@ -42,10 +41,19 @@ type Transaction = {
   rule: string;
   status: "approved" | "declined";
   decision: "ACCEPTED" | "DECLINED" | "NO";
+  speech: string;
   Icon: LucideIcon;
 };
 
-type GuidePhase = "prompt" | "result" | "travelling" | "complete";
+type GuidePhase = "checking" | "result" | "travelling";
+
+type TourState = {
+  index: number;
+  phase: GuidePhase;
+  position: number;
+  step: number;
+  travelProgress: number;
+};
 
 const TRANSACTIONS: Transaction[] = [
   {
@@ -57,6 +65,7 @@ const TRANSACTIONS: Transaction[] = [
     rule: "Essential food merchant",
     status: "approved",
     decision: "ACCEPTED",
+    speech: "Groceries are covered.",
     Icon: ShoppingBasket,
   },
   {
@@ -68,6 +77,7 @@ const TRANSACTIONS: Transaction[] = [
     rule: "Blocked category: alcohol",
     status: "declined",
     decision: "DECLINED",
+    speech: "Alcohol stays blocked.",
     Icon: Wine,
   },
   {
@@ -79,6 +89,7 @@ const TRANSACTIONS: Transaction[] = [
     rule: "Approved transportation",
     status: "approved",
     decision: "ACCEPTED",
+    speech: "Bus fare is covered.",
     Icon: TrainFront,
   },
   {
@@ -90,6 +101,7 @@ const TRANSACTIONS: Transaction[] = [
     rule: "Essential hygiene",
     status: "approved",
     decision: "ACCEPTED",
+    speech: "Hygiene is covered.",
     Icon: Droplets,
   },
   {
@@ -101,6 +113,7 @@ const TRANSACTIONS: Transaction[] = [
     rule: "Cash withdrawal is unavailable",
     status: "declined",
     decision: "NO",
+    speech: "Cash withdrawals stay locked.",
     Icon: Banknote,
   },
 ];
@@ -117,6 +130,38 @@ const STATUS_VARIANTS: { enter: Variant; center: Variant; exit: Variant } = {
   center: { opacity: 1, y: 0, filter: "blur(0px)" },
   exit: { opacity: 0, y: -7, filter: "blur(4px)" },
 };
+
+const TOUR_SEGMENT = 1 / TRANSACTIONS.length;
+const TOUR_ARRIVAL_POINT = 0.5;
+
+const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
+
+const smoothstep = (value: number) => {
+  const progress = clamp(value);
+  return progress * progress * (3 - 2 * progress);
+};
+
+function getTourState(progress: number): TourState {
+  const safeProgress = clamp(progress, 0, 0.999999);
+  const index = Math.min(
+    TRANSACTIONS.length - 1,
+    Math.floor(safeProgress / TOUR_SEGMENT),
+  );
+  const localProgress = clamp(
+    (safeProgress - index * TOUR_SEGMENT) / TOUR_SEGMENT,
+  );
+  const checkProgress = clamp(localProgress / TOUR_ARRIVAL_POINT);
+  const hasArrived = localProgress >= TOUR_ARRIVAL_POINT;
+  const travelProgress = index === 0 ? 1 : smoothstep(checkProgress);
+
+  return {
+    index,
+    phase: hasArrived ? "result" : index === 0 ? "checking" : "travelling",
+    position: index === 0 ? 0 : index - 1 + travelProgress,
+    step: hasArrived ? 3 : Math.min(2, Math.floor(checkProgress * 3)),
+    travelProgress,
+  };
+}
 
 function CardMark() {
   return (
@@ -180,19 +225,20 @@ export function SpendingControls() {
   const [announcement, setAnnouncement] = useState("");
   const [fieldActive, setFieldActive] = useState(false);
   const [guideIndex, setGuideIndex] = useState(0);
-  const [guidePhase, setGuidePhase] = useState<GuidePhase>("prompt");
+  const [guidePhase, setGuidePhase] = useState<GuidePhase>(
+    prefersReducedMotion ? "result" : "checking",
+  );
   const [arrived, setArrived] = useState(prefersReducedMotion);
-  const guideTimers = useRef<number[]>([]);
+  const [replayCount, setReplayCount] = useState(0);
+  const lastAnnouncedIndex = useRef(-1);
   const pointerX = useSpring(useMotionValue(0), { stiffness: 180, damping: 24, mass: 0.45 });
   const pointerY = useSpring(useMotionValue(0), { stiffness: 180, damping: 24, mass: 0.45 });
   const tiltY = useTransform(pointerX, [-1, 1], [-6, 6]);
   const tiltX = useTransform(pointerY, [-1, 1], [5, -5]);
   const burstControls = useAnimationControls();
+  const mascotControls = useAnimationControls();
 
-  const transaction = useMemo(
-    () => TRANSACTIONS.find((item) => item.id === transactionId) ?? TRANSACTIONS[0],
-    [transactionId],
-  );
+  const transaction = TRANSACTIONS[guideIndex] ?? TRANSACTIONS[0];
   const approved = transaction.status === "approved";
   const StatusIcon = approved ? Check : X;
 
@@ -233,11 +279,37 @@ export function SpendingControls() {
     [0, 0.08, 0.9, 1],
     [0.16, 1, 1, 0],
   );
+  const guideLeft = useTransform(smoothProgress, (latest) => {
+    const { position } = getTourState(latest);
+    return `${((position + 0.5) / TRANSACTIONS.length) * 100}%`;
+  });
+  const guideRouteProgress = useTransform(smoothProgress, (latest) => {
+    const { position } = getTourState(latest);
+    return position / (TRANSACTIONS.length - 1);
+  });
+  const guideHop = useTransform(smoothProgress, (latest) => {
+    const state = getTourState(latest);
+    if (state.phase !== "travelling") return 0;
+    return -14 * Math.sin(Math.PI * state.travelProgress)
+      - 3 * Math.sin(Math.PI * state.travelProgress * 3);
+  });
+  const guideTilt = useTransform(smoothProgress, (latest) => {
+    const state = getTourState(latest);
+    if (state.phase !== "travelling") return 0;
+    return 5 * Math.sin(Math.PI * state.travelProgress * 2);
+  });
 
   useMotionValueEvent(smoothProgress, "change", (latest) => {
     if (prefersReducedMotion) return;
-    const nextStep = Math.min(3, Math.max(0, Math.floor(latest * 4)));
-    setActiveStep((current) => (current === nextStep ? current : nextStep));
+    const next = getTourState(latest);
+    const nextTransaction = TRANSACTIONS[next.index];
+
+    setActiveStep((current) => (current === next.step ? current : next.step));
+    setGuideIndex((current) => (current === next.index ? current : next.index));
+    setGuidePhase((current) => (current === next.phase ? current : next.phase));
+    setTransactionId((current) => (
+      current === nextTransaction.id ? current : nextTransaction.id
+    ));
   });
 
   // Latch on landing: once he's on Groceries he stays there, so scrolling back
@@ -288,54 +360,59 @@ export function SpendingControls() {
     if (prefersReducedMotion) {
       setActiveStep(3);
       setArrived(true);
+      setGuidePhase("result");
     }
   }, [prefersReducedMotion]);
 
-  useEffect(() => () => {
-    guideTimers.current.forEach((timer) => window.clearTimeout(timer));
-  }, []);
+  useEffect(() => {
+    if (guidePhase !== "result" || lastAnnouncedIndex.current === guideIndex) return;
 
-  const clearGuideTimers = () => {
-    guideTimers.current.forEach((timer) => window.clearTimeout(timer));
-    guideTimers.current = [];
-  };
+    lastAnnouncedIndex.current = guideIndex;
+    setAnnouncement(
+      `${transaction.decision}. ${transaction.speech} ${transaction.merchant}, ${transaction.amount}.`,
+    );
+  }, [guideIndex, guidePhase, transaction]);
 
   const selectTransaction = (value: string) => {
     const next = TRANSACTIONS.find((item) => item.id === value);
     if (!next) return;
     const nextIndex = TRANSACTIONS.findIndex((item) => item.id === next.id);
-    clearGuideTimers();
-    setGuidePhase(prefersReducedMotion ? "prompt" : "travelling");
-    setGuideIndex(nextIndex);
-    setTransactionId(next.id);
-    setAnnouncement(
-      `${next.merchant}, ${next.amount}. Purchase ${next.status}. ${next.rule}.`,
-    );
 
-    if (!prefersReducedMotion) {
-      guideTimers.current.push(window.setTimeout(() => setGuidePhase("prompt"), 880));
-    }
-  };
-
-  const runGuidedPurchase = () => {
-    if (guidePhase === "travelling" || guidePhase === "result" || guidePhase === "complete") return;
-
-    clearGuideTimers();
-    setGuidePhase(guideIndex === TRANSACTIONS.length - 1 ? "complete" : "result");
-    setAnnouncement(
-      `${transaction.decision}. ${transaction.merchant}, ${transaction.amount}. ${transaction.rule}.`,
-    );
-
-    if (guideIndex === TRANSACTIONS.length - 1) return;
-
-    guideTimers.current.push(window.setTimeout(() => {
-      const nextIndex = guideIndex + 1;
-      const next = TRANSACTIONS[nextIndex];
-      setGuidePhase("travelling");
+    if (prefersReducedMotion) {
+      setActiveStep(3);
+      setGuidePhase("result");
       setGuideIndex(nextIndex);
       setTransactionId(next.id);
-    }, 900));
-    guideTimers.current.push(window.setTimeout(() => setGuidePhase("prompt"), 1800));
+      setAnnouncement(`${next.decision}. ${next.speech} ${next.merchant}, ${next.amount}.`);
+      return;
+    }
+
+    const section = sectionRef.current;
+    if (!section) return;
+    const sectionTop = section.getBoundingClientRect().top + window.scrollY;
+    const scrollRange = Math.max(0, section.offsetHeight - window.innerHeight);
+    const destinationProgress = (nextIndex + 0.62) * TOUR_SEGMENT;
+
+    window.scrollTo({
+      top: sectionTop + scrollRange * destinationProgress,
+      behavior: "smooth",
+    });
+  };
+
+  const replayGuidedPurchase = () => {
+    if (!arrived || guidePhase !== "result") return;
+
+    setReplayCount((current) => current + 1);
+    setAnnouncement(
+      `${transaction.decision}. ${transaction.speech} ${transaction.merchant}, ${transaction.amount}.`,
+    );
+    reactToBurst();
+    if (!prefersReducedMotion) {
+      void mascotControls.start({
+        scale: [1, 1.08, 0.98, 1],
+        transition: { duration: 0.42, ease: [0.22, 1, 0.36, 1] },
+      });
+    }
   };
 
   const updateCardTilt = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -369,16 +446,9 @@ export function SpendingControls() {
     "Card rule checked.",
     finalStatus,
   ];
-  const guidedDecisionVisible = guidePhase === "result" || guidePhase === "complete";
-  const guideReacting = guidePhase === "result" || guidePhase === "complete";
-  const visibleStep = guidedDecisionVisible ? 3 : Math.min(activeStep, 2);
-  const guidePrompt = guideIndex === 0
-    ? "Click me for groceries"
-    : guideIndex === 1
-      ? "Click me for alcohol"
-      : guideIndex === 2
-        ? "Click me to take the bus"
-        : "You get the point";
+  const guidedDecisionVisible = guidePhase === "result";
+  const visibleStep = activeStep;
+  const guidePrompt = transaction.speech;
   const guidePosition = guideIndex === 0
     ? "start"
     : guideIndex === TRANSACTIONS.length - 1
@@ -433,14 +503,14 @@ export function SpendingControls() {
             <AnimatePresence mode="wait">
               {guidedDecisionVisible ? (
                 <motion.div
-                  key={`${transaction.id}-${transaction.decision}`}
+                  key={`${transaction.id}-${transaction.decision}-${replayCount}`}
                   className={styles.decisionFlash}
                   data-status={transaction.status}
                   initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.72, filter: "blur(12px)" }}
                   animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
                   exit={prefersReducedMotion ? undefined : { opacity: 0, scale: 1.08, filter: "blur(8px)" }}
                   transition={{ duration: prefersReducedMotion ? 0 : 0.34, ease: [0.22, 1, 0.36, 1] }}
-                  aria-live="assertive"
+                  aria-hidden="true"
                 >
                   {transaction.decision}
                 </motion.div>
@@ -515,36 +585,18 @@ export function SpendingControls() {
               className={styles.guideMascot}
               data-position={guidePosition}
               data-phase={guidePhase}
-              aria-label={`Run ${transaction.label} example`}
+              aria-label={`Replay ${transaction.label} result`}
               data-arrived={arrived ? "true" : undefined}
-              disabled={!arrived || guidePhase === "travelling" || guidePhase === "result" || guidePhase === "complete"}
-              onClick={runGuidedPurchase}
-              animate={
-                prefersReducedMotion
-                  ? { left: `${((guideIndex + 0.5) / TRANSACTIONS.length) * 100}%`, y: 0, rotate: 0 }
-                  : {
-                      left: `${((guideIndex + 0.5) / TRANSACTIONS.length) * 100}%`,
-                      y: guidePhase === "travelling"
-                        ? [0, -18, 5, -12, 0]
-                        : guideReacting
-                          ? [0, -22, 0]
-                          : [0, -5, 0],
-                      rotate: guidePhase === "travelling" ? [0, -5, 4, -2, 0] : 0,
-                    }
-              }
-              transition={
-                prefersReducedMotion
-                  ? { duration: 0 }
-                  : {
-                      left: { type: "spring", stiffness: 82, damping: 16, mass: 0.82 },
-                      y: guidePhase === "travelling"
-                        ? { duration: 0.88, times: [0, 0.24, 0.5, 0.74, 1], ease: [0.22, 1, 0.36, 1] }
-                        : guideReacting
-                          ? { duration: 0.62, times: [0, 0.46, 1], ease: [0.22, 1, 0.36, 1] }
-                          : { duration: 2.6, repeat: Infinity, ease: "easeInOut" },
-                      rotate: { duration: 0.88, ease: [0.22, 1, 0.36, 1] },
-                    }
-              }
+              disabled={!arrived || guidePhase !== "result"}
+              onClick={replayGuidedPurchase}
+              style={{
+                left: prefersReducedMotion
+                  ? `${((guideIndex + 0.5) / TRANSACTIONS.length) * 100}%`
+                  : guideLeft,
+                y: prefersReducedMotion ? 0 : guideHop,
+                rotate: prefersReducedMotion ? 0 : guideTilt,
+              }}
+              animate={mascotControls}
               whileHover={prefersReducedMotion ? undefined : { scale: 1.045 }}
               whileTap={prefersReducedMotion ? undefined : { scale: 0.94 }}
             >
@@ -559,10 +611,20 @@ export function SpendingControls() {
                     : { x: arrivalX, y: arrivalY, rotate: arrivalRotate, opacity: arrivalOpacity }
                 }
               >
-                <span className={styles.guideBubble}>
-                  {guidePhase === "prompt" ? <MousePointerClick aria-hidden="true" /> : null}
-                  <span>{guidePrompt}</span>
-                </span>
+                <AnimatePresence initial={false} mode="wait">
+                  {arrived && guidePhase === "result" ? (
+                    <motion.span
+                      key={`${transaction.id}-speech`}
+                      className={styles.guideBubble}
+                      initial={prefersReducedMotion ? false : { opacity: 0, filter: "blur(5px)" }}
+                      animate={{ opacity: 1, filter: "blur(0px)" }}
+                      exit={prefersReducedMotion ? undefined : { opacity: 0, filter: "blur(4px)" }}
+                      transition={{ duration: prefersReducedMotion ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] }}
+                    >
+                      <span>{guidePrompt}</span>
+                    </motion.span>
+                  ) : null}
+                </AnimatePresence>
                 <BoovCharacter
                   className={styles.guideCharacter}
                   size={94}
@@ -573,10 +635,27 @@ export function SpendingControls() {
                         ? "crawl"
                         : "idle"
                   }
-                  wave={arrived && (guidePhase === "prompt" || guidePhase === "complete")}
+                  wave={arrived && guidePhase === "result"}
                 />
               </motion.span>
             </motion.button>
+
+            <div className={styles.travelTrack} aria-hidden="true">
+              <motion.span
+                className={styles.travelProgress}
+                style={{
+                  scaleX: prefersReducedMotion
+                    ? guideIndex / (TRANSACTIONS.length - 1)
+                    : guideRouteProgress,
+                }}
+              />
+              {TRANSACTIONS.map((item, index) => (
+                <i
+                  key={item.id}
+                  data-state={index === guideIndex ? "current" : index < guideIndex ? "complete" : "upcoming"}
+                />
+              ))}
+            </div>
 
             <Tabs value={transactionId} onValueChange={selectTransaction}>
               <TabsList className={styles.tabsList} aria-label="Try another purchase">
