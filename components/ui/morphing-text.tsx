@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useRef } from "react"
 
 import { clsx } from "clsx"
 
-const morphTime = 0.75
+const morphTime = 0.72
 const cooldownTime = 0.5
 // The threshold look only needs the 0–12px range. Capping it here and keeping
 // the filter regions tight avoids the huge offscreen surfaces that made iOS
@@ -14,7 +14,13 @@ const svgNamespace = "http://www.w3.org/2000/svg"
 // A suspended tab or a busy mobile main thread can hand requestAnimationFrame
 // a very large delta. Cap the amount of animation time one frame can consume
 // so the opening words cannot skip straight to the final state.
-const maxFrameDelta = 1 / 12
+const maxFrameDelta = 1 / 18
+
+// Ease both ends of the liquid handoff so the letters gather and release
+// without a visible snap through the midpoint. The total morph is only about
+// four percent quicker; most of the perceived polish comes from this curve.
+const smoothMorphFraction = (fraction: number) =>
+  fraction * fraction * (3 - 2 * fraction)
 
 interface MorphingTextOptions {
   /** Seconds the first text takes to resolve out of blur. 0 shows it at once. */
@@ -168,7 +174,7 @@ const useMorphingText = (
       fraction = 1
     }
 
-    setStyles(fraction)
+    setStyles(smoothMorphFraction(fraction))
 
     if (fraction === 1) {
       textIndexRef.current++
