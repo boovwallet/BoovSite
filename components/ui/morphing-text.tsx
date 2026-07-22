@@ -6,12 +6,15 @@ import { clsx } from "clsx"
 
 const morphTime = 0.75
 const cooldownTime = 0.5
-const maxBlur = 32
+// The threshold look only needs the 0–12px range. Capping it here and keeping
+// the filter regions tight avoids the huge offscreen surfaces that made iOS
+// Safari repaint several million pixels per frame.
+const maxBlur = 12
 const svgNamespace = "http://www.w3.org/2000/svg"
 // A suspended tab or a busy mobile main thread can hand requestAnimationFrame
 // a very large delta. Cap the amount of animation time one frame can consume
 // so the opening words cannot skip straight to the final state.
-const maxFrameDelta = 1 / 20
+const maxFrameDelta = 1 / 12
 
 interface MorphingTextOptions {
   /** Seconds the first text takes to resolve out of blur. 0 shows it at once. */
@@ -52,8 +55,19 @@ const setLayerState = (
 ) => {
   if (!layer || !blur) return
   setLayerText(layer, text)
-  blur.setAttribute("stdDeviation", `${Math.max(0, blurAmount)}`)
-  layer.setAttribute("opacity", `${opacity}`)
+  const nextBlur = `${Math.max(0, blurAmount).toFixed(3)}`
+  const nextOpacity = `${opacity.toFixed(4)}`
+  const nextFilter = blurAmount > 0 ? layer.dataset.blurFilter ?? "none" : "none"
+
+  if (blur.getAttribute("stdDeviation") !== nextBlur) {
+    blur.setAttribute("stdDeviation", nextBlur)
+  }
+  if (layer.getAttribute("opacity") !== nextOpacity) {
+    layer.setAttribute("opacity", nextOpacity)
+  }
+  if (layer.getAttribute("filter") !== nextFilter) {
+    layer.setAttribute("filter", nextFilter)
+  }
 }
 
 const useMorphingText = (
@@ -66,12 +80,24 @@ const useMorphingText = (
   const entranceRef = useRef(entrance)
   const holdRef = useRef(hold)
   const doneRef = useRef(false)
-  const timeRef = useRef(new Date())
+  const timeRef = useRef(0)
 
   const text1Ref = useRef<SVGGElement>(null)
   const text2Ref = useRef<SVGGElement>(null)
   const blur1Ref = useRef<SVGFEGaussianBlurElement>(null)
   const blur2Ref = useRef<SVGFEGaussianBlurElement>(null)
+  const thresholdRef = useRef<SVGGElement>(null)
+
+  const setThresholdActive = useCallback((active: boolean) => {
+    const threshold = thresholdRef.current
+    if (!threshold) return
+    const nextFilter = active
+      ? threshold.dataset.thresholdFilter ?? "none"
+      : "none"
+    if (threshold.getAttribute("filter") !== nextFilter) {
+      threshold.setAttribute("filter", nextFilter)
+    }
+  }, [])
 
   const onCompleteRef = useRef(onComplete)
   useEffect(() => {
@@ -80,6 +106,7 @@ const useMorphingText = (
 
   const setStyles = useCallback(
     (fraction: number) => {
+      setThresholdActive(true)
       const invertedFraction = 1 - fraction
       setLayerState(
         text1Ref.current,
@@ -96,13 +123,14 @@ const useMorphingText = (
         Math.pow(fraction, 0.4),
       )
     },
-    [texts]
+    [setThresholdActive, texts]
   )
 
   /** Resolve the first text out of blur on the same curve the morph uses, so
    *  the entrance and the morph read as one continuous effect. */
   const setEntranceStyles = useCallback(
     (fraction: number) => {
+      setThresholdActive(true)
       setLayerState(
         text1Ref.current,
         blur1Ref.current,
@@ -118,15 +146,16 @@ const useMorphingText = (
         0,
       )
     },
-    [texts]
+    [setThresholdActive, texts]
   )
 
   /** Pin a single text at full opacity with no blur - used for the opening
    *  hold and for the final resting state. */
   const settleOn = useCallback((text: string) => {
+    setThresholdActive(false)
     setLayerState(text1Ref.current, blur1Ref.current, text, 0, 0)
     setLayerState(text2Ref.current, blur2Ref.current, text, 0, 1)
-  }, [])
+  }, [setThresholdActive])
 
   const doMorph = useCallback(() => {
     morphRef.current -= cooldownRef.current
@@ -148,26 +177,26 @@ const useMorphingText = (
 
   const doCooldown = useCallback(() => {
     morphRef.current = 0
+    setThresholdActive(false)
     const currentText = texts[textIndexRef.current % texts.length]
     setLayerState(text1Ref.current, blur1Ref.current, currentText, 0, 0)
     setLayerState(text2Ref.current, blur2Ref.current, currentText, 0, 1)
-  }, [texts])
+  }, [setThresholdActive, texts])
 
   useEffect(() => {
     let animationFrameId: number
     // Reset here rather than at hook creation so the gap between render and
     // mount doesn't get charged against the opening hold.
-    timeRef.current = new Date()
+    timeRef.current = performance.now()
 
-    const animate = () => {
+    const animate = (timestamp: number) => {
       animationFrameId = requestAnimationFrame(animate)
 
-      const newTime = new Date()
       const dt = Math.min(
         maxFrameDelta,
-        (newTime.getTime() - timeRef.current.getTime()) / 1000
+        (timestamp - timeRef.current) / 1000
       )
-      timeRef.current = newTime
+      timeRef.current = timestamp
 
       // Opening entrance: the first text condenses out of blur.
       if (entranceRef.current > 0) {
@@ -202,13 +231,13 @@ const useMorphingText = (
       }
     }
 
-    animate()
+    animationFrameId = requestAnimationFrame(animate)
     return () => {
       cancelAnimationFrame(animationFrameId)
     }
   }, [doMorph, doCooldown, settleOn, setEntranceStyles, texts, loop, entrance])
 
-  return { text1Ref, text2Ref, blur1Ref, blur2Ref }
+  return { text1Ref, text2Ref, blur1Ref, blur2Ref, thresholdRef }
 }
 
 interface MorphingTextProps {
@@ -251,7 +280,7 @@ const SvgMorph: React.FC<MorphingTextProps> = ({
   const thresholdId = `morph-threshold-${reactId}`
   const blur1Id = `morph-blur-a-${reactId}`
   const blur2Id = `morph-blur-b-${reactId}`
-  const { text1Ref, text2Ref, blur1Ref, blur2Ref } = useMorphingText(texts, {
+  const { text1Ref, text2Ref, blur1Ref, blur2Ref, thresholdRef } = useMorphingText(texts, {
     entrance,
     hold,
     loop,
@@ -267,30 +296,30 @@ const SvgMorph: React.FC<MorphingTextProps> = ({
       <defs>
         <filter
           id={blur1Id}
-          x="-200%"
-          y="-200%"
-          width="500%"
-          height="500%"
+          x="-20%"
+          y="-60%"
+          width="140%"
+          height="220%"
           colorInterpolationFilters="sRGB"
         >
           <feGaussianBlur ref={blur1Ref} stdDeviation={maxBlur} />
         </filter>
         <filter
           id={blur2Id}
-          x="-200%"
-          y="-200%"
-          width="500%"
-          height="500%"
+          x="-20%"
+          y="-60%"
+          width="140%"
+          height="220%"
           colorInterpolationFilters="sRGB"
         >
           <feGaussianBlur ref={blur2Ref} stdDeviation={0} />
         </filter>
         <filter
           id={thresholdId}
-          x="-100%"
-          y="-100%"
-          width="300%"
-          height="300%"
+          x="-15%"
+          y="-30%"
+          width="130%"
+          height="160%"
           colorInterpolationFilters="sRGB"
         >
           <feColorMatrix
@@ -303,11 +332,16 @@ const SvgMorph: React.FC<MorphingTextProps> = ({
           />
         </filter>
       </defs>
-      <g filter={`url(#${thresholdId})`}>
+      <g
+        ref={thresholdRef}
+        data-threshold-filter={`url(#${thresholdId})`}
+        filter="none"
+      >
         <g
           ref={text1Ref}
           data-text={texts[0]}
-          filter={`url(#${blur1Id})`}
+          data-blur-filter={`url(#${blur1Id})`}
+          filter="none"
           opacity={0}
         >
           <SvgTextLines text={texts[0]} />
@@ -315,7 +349,8 @@ const SvgMorph: React.FC<MorphingTextProps> = ({
         <g
           ref={text2Ref}
           data-text={texts[1 % texts.length]}
-          filter={`url(#${blur2Id})`}
+          data-blur-filter={`url(#${blur2Id})`}
+          filter="none"
           opacity={0}
         >
           <SvgTextLines text={texts[1 % texts.length]} />
