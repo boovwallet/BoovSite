@@ -101,6 +101,23 @@ export default function InteractiveGrid({
   const rootRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const latestPointerRef = useRef({ clientX: -1000, clientY: -1000, available: false });
+
+  // The hero grid becomes active only after the preloader exits. Remember the
+  // pointer while it is covered so Tap To Change reacts on its first frame,
+  // even when the cursor is already resting over the wordmark.
+  useEffect(() => {
+    const rememberPointer = (event: PointerEvent) => {
+      latestPointerRef.current = {
+        clientX: event.clientX,
+        clientY: event.clientY,
+        available: true,
+      };
+    };
+
+    window.addEventListener("pointermove", rememberPointer, { passive: true });
+    return () => window.removeEventListener("pointermove", rememberPointer);
+  }, []);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -353,6 +370,24 @@ export default function InteractiveGrid({
       };
     };
 
+    const restorePointerPosition = () => {
+      if (coarsePointer || reducedMotion || !active || !latestPointerRef.current.available) return;
+
+      const bounds = root.getBoundingClientRect();
+      const { clientX, clientY } = latestPointerRef.current;
+      pointer.x = clientX - bounds.left;
+      pointer.y = clientY - bounds.top;
+      pointer.inside =
+        clientX >= bounds.left &&
+        clientX <= bounds.right &&
+        clientY >= bounds.top &&
+        clientY <= bounds.bottom;
+      revealTarget = pointer.inside ? 1 : 0;
+      lastPointerX = pointer.x;
+      lastPointerY = pointer.y;
+      lastPointerTime = performance.now();
+    };
+
     const onPointerMove = (event: PointerEvent) => {
       if (coarsePointer || reducedMotion || !active) return;
       const next = pointerPosition(event);
@@ -426,7 +461,11 @@ export default function InteractiveGrid({
     );
 
     const fontsReady = document.fonts?.ready ?? Promise.resolve();
-    void fontsReady.then(buildGrid);
+    void fontsReady.then(() => {
+      buildGrid();
+      restorePointerPosition();
+      start();
+    });
     resizeObserver.observe(root);
     intersectionObserver.observe(root);
     window.addEventListener("pointermove", onPointerMove, { passive: true });
