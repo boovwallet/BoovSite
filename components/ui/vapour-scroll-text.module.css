@@ -23,3 +23,11 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+.staticRoot {
+  height: auto;
+}
+
+.staticRoot span {
+  display: block;
+}

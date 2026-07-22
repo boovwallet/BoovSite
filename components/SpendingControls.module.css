@@ -629,7 +629,8 @@
 
 @media (max-width: 900px) {
   .section {
-    height: 330svh;
+    height: 300svh;
+    margin-top: 0;
   }
 
   .vignette {
@@ -637,7 +638,7 @@
   }
 
   .sceneContent {
-    padding: 86px 12px max(16px, env(safe-area-inset-bottom));
+    padding: 102px 12px max(16px, env(safe-area-inset-bottom));
   }
 
   .copy {
@@ -646,13 +647,14 @@
   }
 
   .copy h2 {
-    max-width: 7ch;
-    font-size: clamp(2.75rem, 13vw, 4rem);
+    max-width: 8ch;
+    font-size: clamp(2.55rem, 11.5vw, 3.4rem);
   }
 
   .statusTransition {
     min-height: 40px;
     margin-top: 11px;
+    overflow: hidden;
   }
 
   .statusTransition p {
@@ -770,7 +772,7 @@
 @media (max-width: 900px) and (max-height: 720px) {
   .sceneContent {
     gap: 6px;
-    padding-top: 82px;
+    padding-top: 88px;
     padding-bottom: 10px;
   }
 

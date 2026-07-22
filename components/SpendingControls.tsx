@@ -117,6 +117,12 @@ const STATUS_VARIANTS: { enter: Variant; center: Variant; exit: Variant } = {
   exit: { opacity: 0, y: -7, filter: "blur(4px)" },
 };
 
+const MOBILE_STATUS_VARIANTS: { enter: Variant; center: Variant; exit: Variant } = {
+  enter: { opacity: 0, y: 4 },
+  center: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -3 },
+};
+
 function CardMark() {
   return (
     <span className={styles.cardBrand}>
@@ -129,11 +135,13 @@ function CardMark() {
 function MemberCard({
   activeStep,
   reducedMotion,
+  simplifiedMotion,
   tiltX,
   tiltY,
 }: {
   activeStep: number;
   reducedMotion: boolean;
+  simplifiedMotion: boolean;
   tiltX: MotionValue<number>;
   tiltY: MotionValue<number>;
 }) {
@@ -147,18 +155,23 @@ function MemberCard({
       layoutId="boov-authorization-card"
       role="img"
       aria-label="Navy Boov Essentials card"
-      style={{ rotateX: reducedMotion ? 0 : tiltX, rotateY: reducedMotion ? 0 : tiltY }}
+      style={{
+        rotateX: reducedMotion || simplifiedMotion ? 0 : tiltX,
+        rotateY: reducedMotion || simplifiedMotion ? 0 : tiltY,
+      }}
       animate={{
         rotate: [-7, -3, 0, 0][activeStep],
-        y: reducedMotion ? baseY : [baseY - 3, baseY + 4, baseY - 3],
+        y: reducedMotion || simplifiedMotion ? baseY : [baseY - 3, baseY + 4, baseY - 3],
         scale: baseScale,
       }}
       transition={{
-        rotate: { duration: reducedMotion ? 0 : 0.48, ease: [0.22, 1, 0.36, 1] },
-        scale: { duration: reducedMotion ? 0 : 0.48, ease: [0.22, 1, 0.36, 1] },
+        rotate: { duration: reducedMotion ? 0 : simplifiedMotion ? 0.26 : 0.48, ease: [0.22, 1, 0.36, 1] },
+        scale: { duration: reducedMotion ? 0 : simplifiedMotion ? 0.26 : 0.48, ease: [0.22, 1, 0.36, 1] },
         y: reducedMotion
           ? { duration: 0 }
-          : { duration: 4.2, repeat: Infinity, ease: "easeInOut" },
+          : simplifiedMotion
+            ? { duration: 0.26, ease: [0.22, 1, 0.36, 1] }
+            : { duration: 4.2, repeat: Infinity, ease: "easeInOut" },
       }}
     >
       <span className={styles.cardRibbon} aria-hidden="true" />
@@ -181,12 +194,23 @@ export function SpendingControls() {
   const [guideIndex, setGuideIndex] = useState(0);
   const [guidePhase, setGuidePhase] = useState<GuidePhase>("prompt");
   const [arrived, setArrived] = useState(prefersReducedMotion);
+  const [isMobile, setIsMobile] = useState(false);
   const guideTimers = useRef<number[]>([]);
   const pointerX = useSpring(useMotionValue(0), { stiffness: 180, damping: 24, mass: 0.45 });
   const pointerY = useSpring(useMotionValue(0), { stiffness: 180, damping: 24, mass: 0.45 });
   const tiltY = useTransform(pointerX, [-1, 1], [-6, 6]);
   const tiltX = useTransform(pointerY, [-1, 1], [5, -5]);
   const burstControls = useAnimationControls();
+
+  useEffect(() => {
+    const mobileQuery = window.matchMedia(
+      "(max-width: 900px), (hover: none), (pointer: coarse)",
+    );
+    const update = () => setIsMobile(mobileQuery.matches);
+    update();
+    mobileQuery.addEventListener("change", update);
+    return () => mobileQuery.removeEventListener("change", update);
+  }, []);
 
   const transaction = useMemo(
     () => TRANSACTIONS.find((item) => item.id === transactionId) ?? TRANSACTIONS[0],
@@ -219,21 +243,23 @@ export function SpendingControls() {
     mass: 0.28,
     restDelta: 0.001,
   });
+  const approachMotion = isMobile ? approachProgress : smoothApproach;
 
   // He sweeps in from the side and swings down into the slot. rotate(90deg)
   // maps the feet vector to the left, so he comes in on his side and unwinds
   // as he settles onto the tab row.
-  const arrivalRotate = useTransform(smoothApproach, [0, 0.52, 0.8, 1], [90, 90, 26, 0]);
-  const arrivalX = useTransform(smoothApproach, [0, 0.52, 0.82, 1], ["-42vw", "-40vw", "-19vw", "0vw"]);
-  const arrivalY = useTransform(smoothApproach, [0, 0.5, 0.8, 1], ["-64vh", "-13vh", "0vh", "0vh"]);
-  const arrivalOpacity = useTransform(smoothApproach, [0, 0.05, 1], [0, 1, 1]);
+  const arrivalRotate = useTransform(approachMotion, [0, 0.52, 0.8, 1], [90, 90, 26, 0]);
+  const arrivalX = useTransform(approachMotion, [0, 0.52, 0.82, 1], ["-42vw", "-40vw", "-19vw", "0vw"]);
+  const arrivalY = useTransform(approachMotion, [0, 0.5, 0.8, 1], ["-64vh", "-13vh", "0vh", "0vh"]);
+  const arrivalOpacity = useTransform(approachMotion, [0, 0.05, 1], [0, 1, 1]);
+  const chapterProgress = isMobile ? scrollYProgress : smoothProgress;
   const fieldOpacity = useTransform(
-    smoothProgress,
+    chapterProgress,
     [0, 0.08, 0.9, 1],
     [0.16, 1, 1, 0],
   );
 
-  useMotionValueEvent(smoothProgress, "change", (latest) => {
+  useMotionValueEvent(chapterProgress, "change", (latest) => {
     if (prefersReducedMotion) return;
     const nextStep = Math.min(3, Math.max(0, Math.floor(latest * 4)));
     setActiveStep((current) => (current === nextStep ? current : nextStep));
@@ -249,7 +275,7 @@ export function SpendingControls() {
   // look right without the latch: every arrival transform converges to
   // identity at progress 1.)
   const seenApproach = useRef(false);
-  useMotionValueEvent(smoothApproach, "change", (latest) => {
+  useMotionValueEvent(approachMotion, "change", (latest) => {
     if (latest < 0.85) {
       seenApproach.current = true;
       return;
@@ -338,7 +364,7 @@ export function SpendingControls() {
   };
 
   const updateCardTilt = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (prefersReducedMotion) return;
+    if (prefersReducedMotion || isMobile) return;
     const bounds = event.currentTarget.getBoundingClientRect();
     pointerX.set(((event.clientX - bounds.left) / bounds.width - 0.5) * 2);
     pointerY.set(((event.clientY - bounds.top) / bounds.height - 0.5) * 2);
@@ -350,7 +376,7 @@ export function SpendingControls() {
   };
 
   const reactToBurst = () => {
-    if (prefersReducedMotion) return;
+    if (prefersReducedMotion || isMobile) return;
     void burstControls.start({
       scale: [1, 1.025, 1],
       transition: { duration: 0.42, ease: [0.22, 1, 0.36, 1] },
@@ -404,7 +430,7 @@ export function SpendingControls() {
             particleCount={500}
             speed={0.72}
             active={fieldActive}
-            reducedMotion={prefersReducedMotion}
+            reducedMotion={prefersReducedMotion || isMobile}
             onPointerBurst={reactToBurst}
           />
         </motion.div>
@@ -416,8 +442,8 @@ export function SpendingControls() {
             <TransitionPanel
               activeIndex={visibleStep}
               className={styles.statusTransition}
-              variants={prefersReducedMotion ? undefined : STATUS_VARIANTS}
-              transition={{ duration: prefersReducedMotion ? 0 : 0.42, ease: [0.22, 1, 0.36, 1] }}
+              variants={prefersReducedMotion ? undefined : isMobile ? MOBILE_STATUS_VARIANTS : STATUS_VARIANTS}
+              transition={{ duration: prefersReducedMotion ? 0 : isMobile ? 0.18 : 0.42, ease: [0.22, 1, 0.36, 1] }}
             >
               {statuses.map((status, index) => (
                 <p key={`${index}-${status}`} data-status={index === 3 ? transaction.status : undefined}>
@@ -468,6 +494,7 @@ export function SpendingControls() {
               <MemberCard
                 activeStep={visibleStep}
                 reducedMotion={prefersReducedMotion}
+                simplifiedMotion={isMobile}
                 tiltX={tiltX}
                 tiltY={tiltY}
               />
@@ -527,7 +554,9 @@ export function SpendingControls() {
                         ? [0, -18, 5, -12, 0]
                         : guideReacting
                           ? [0, -22, 0]
-                          : [0, -5, 0],
+                          : isMobile
+                            ? 0
+                            : [0, -5, 0],
                       rotate: guidePhase === "travelling" ? [0, -5, 4, -2, 0] : 0,
                     }
               }
@@ -540,11 +569,13 @@ export function SpendingControls() {
                         ? { duration: 0.88, times: [0, 0.24, 0.5, 0.74, 1], ease: [0.22, 1, 0.36, 1] }
                         : guideReacting
                           ? { duration: 0.62, times: [0, 0.46, 1], ease: [0.22, 1, 0.36, 1] }
-                          : { duration: 2.6, repeat: Infinity, ease: "easeInOut" },
+                          : isMobile
+                            ? { duration: 0.2 }
+                            : { duration: 2.6, repeat: Infinity, ease: "easeInOut" },
                       rotate: { duration: 0.88, ease: [0.22, 1, 0.36, 1] },
                     }
               }
-              whileHover={prefersReducedMotion ? undefined : { scale: 1.045 }}
+              whileHover={prefersReducedMotion || isMobile ? undefined : { scale: 1.045 }}
               whileTap={prefersReducedMotion ? undefined : { scale: 0.94 }}
             >
               {/* The button keeps its own left/bob/hop animation, so the

@@ -229,7 +229,9 @@ export default function KineticGrid({
     const canvas = canvasRef.current;
     if (!root || !canvas) return;
 
-    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const motionQuery = window.matchMedia(
+      "(prefers-reduced-motion: reduce), (max-width: 760px), (max-width: 900px) and (max-height: 600px), (hover: none), (pointer: coarse)",
+    );
     let visible = false;
     let wasVisible = false;
     let lastAmbientRipple = 0;
