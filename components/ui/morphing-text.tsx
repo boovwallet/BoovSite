@@ -1,12 +1,13 @@
 "use client"
 
-import { useCallback, useEffect, useRef } from "react"
+import { useCallback, useEffect, useId, useRef } from "react"
 
 import { clsx } from "clsx"
 
 const morphTime = 0.75
 const cooldownTime = 0.5
-const thresholdFilter = 'url("#threshold") blur(0.6px)'
+const maxBlur = 32
+const svgNamespace = "http://www.w3.org/2000/svg"
 // A suspended tab or a busy mobile main thread can hand requestAnimationFrame
 // a very large delta. Cap the amount of animation time one frame can consume
 // so the opening words cannot skip straight to the final state.
@@ -22,6 +23,39 @@ interface MorphingTextOptions {
   onComplete?: () => void
 }
 
+const blurForFraction = (fraction: number) =>
+  fraction > 0 ? Math.min(8 / fraction - 8, maxBlur) : maxBlur
+
+const setLayerText = (layer: SVGGElement, text: string) => {
+  if (layer.dataset.text === text) return
+
+  const lines = text.split("\n").map((line, index) => {
+    const textNode = document.createElementNS(svgNamespace, "text")
+    textNode.setAttribute("x", "50%")
+    textNode.setAttribute("y", `${(index + 1) * 0.78}em`)
+    textNode.setAttribute("text-anchor", "middle")
+    textNode.setAttribute("fill", "currentColor")
+    textNode.textContent = line
+    return textNode
+  })
+
+  layer.replaceChildren(...lines)
+  layer.dataset.text = text
+}
+
+const setLayerState = (
+  layer: SVGGElement | null,
+  blur: SVGFEGaussianBlurElement | null,
+  text: string,
+  blurAmount: number,
+  opacity: number,
+) => {
+  if (!layer || !blur) return
+  setLayerText(layer, text)
+  blur.setAttribute("stdDeviation", `${Math.max(0, blurAmount)}`)
+  layer.setAttribute("opacity", `${opacity}`)
+}
+
 const useMorphingText = (
   texts: string[],
   { entrance, hold, loop, onComplete }: MorphingTextOptions
@@ -34,8 +68,10 @@ const useMorphingText = (
   const doneRef = useRef(false)
   const timeRef = useRef(new Date())
 
-  const text1Ref = useRef<HTMLSpanElement>(null)
-  const text2Ref = useRef<HTMLSpanElement>(null)
+  const text1Ref = useRef<SVGGElement>(null)
+  const text2Ref = useRef<SVGGElement>(null)
+  const blur1Ref = useRef<SVGFEGaussianBlurElement>(null)
+  const blur2Ref = useRef<SVGFEGaussianBlurElement>(null)
 
   const onCompleteRef = useRef(onComplete)
   useEffect(() => {
@@ -44,21 +80,21 @@ const useMorphingText = (
 
   const setStyles = useCallback(
     (fraction: number) => {
-      const [current1, current2] = [text1Ref.current, text2Ref.current]
-      if (!current1 || !current2) return
-
-      current2.style.filter = `blur(${Math.min(8 / fraction - 8, 100)}px)`
-      current2.style.opacity = `${Math.pow(fraction, 0.4)}`
-
       const invertedFraction = 1 - fraction
-      current1.style.filter = `blur(${Math.min(
-        8 / invertedFraction - 8,
-        100
-      )}px)`
-      current1.style.opacity = `${Math.pow(invertedFraction, 0.4)}`
-
-      current1.textContent = texts[textIndexRef.current % texts.length]
-      current2.textContent = texts[(textIndexRef.current + 1) % texts.length]
+      setLayerState(
+        text1Ref.current,
+        blur1Ref.current,
+        texts[textIndexRef.current % texts.length],
+        blurForFraction(invertedFraction),
+        Math.pow(invertedFraction, 0.4),
+      )
+      setLayerState(
+        text2Ref.current,
+        blur2Ref.current,
+        texts[(textIndexRef.current + 1) % texts.length],
+        blurForFraction(fraction),
+        Math.pow(fraction, 0.4),
+      )
     },
     [texts]
   )
@@ -67,18 +103,20 @@ const useMorphingText = (
    *  the entrance and the morph read as one continuous effect. */
   const setEntranceStyles = useCallback(
     (fraction: number) => {
-      const [current1, current2] = [text1Ref.current, text2Ref.current]
-      if (!current1 || !current2) return
-
-      current1.textContent = texts[0]
-      current2.textContent = texts[1 % texts.length]
-
-      current1.style.filter = `blur(${
-        fraction > 0 ? Math.min(8 / fraction - 8, 100) : 100
-      }px)`
-      current1.style.opacity = `${Math.pow(fraction, 0.4)}`
-      current2.style.filter = "none"
-      current2.style.opacity = "0"
+      setLayerState(
+        text1Ref.current,
+        blur1Ref.current,
+        texts[0],
+        blurForFraction(fraction),
+        Math.pow(fraction, 0.4),
+      )
+      setLayerState(
+        text2Ref.current,
+        blur2Ref.current,
+        texts[1 % texts.length],
+        0,
+        0,
+      )
     },
     [texts]
   )
@@ -86,14 +124,8 @@ const useMorphingText = (
   /** Pin a single text at full opacity with no blur - used for the opening
    *  hold and for the final resting state. */
   const settleOn = useCallback((text: string) => {
-    const [current1, current2] = [text1Ref.current, text2Ref.current]
-    if (!current1 || !current2) return
-
-    current1.style.filter = "none"
-    current1.style.opacity = "0"
-    current2.style.filter = "none"
-    current2.style.opacity = "1"
-    current2.textContent = text
+    setLayerState(text1Ref.current, blur1Ref.current, text, 0, 0)
+    setLayerState(text2Ref.current, blur2Ref.current, text, 0, 1)
   }, [])
 
   const doMorph = useCallback(() => {
@@ -116,14 +148,10 @@ const useMorphingText = (
 
   const doCooldown = useCallback(() => {
     morphRef.current = 0
-    const [current1, current2] = [text1Ref.current, text2Ref.current]
-    if (current1 && current2) {
-      current2.style.filter = "none"
-      current2.style.opacity = "1"
-      current1.style.filter = "none"
-      current1.style.opacity = "0"
-    }
-  }, [])
+    const currentText = texts[textIndexRef.current % texts.length]
+    setLayerState(text1Ref.current, blur1Ref.current, currentText, 0, 0)
+    setLayerState(text2Ref.current, blur2Ref.current, currentText, 0, 1)
+  }, [texts])
 
   useEffect(() => {
     let animationFrameId: number
@@ -180,7 +208,7 @@ const useMorphingText = (
     }
   }, [doMorph, doCooldown, settleOn, setEntranceStyles, texts, loop, entrance])
 
-  return { text1Ref, text2Ref }
+  return { text1Ref, text2Ref, blur1Ref, blur2Ref }
 }
 
 interface MorphingTextProps {
@@ -195,63 +223,112 @@ interface MorphingTextProps {
   onComplete?: () => void
 }
 
-const Texts: React.FC<Omit<MorphingTextProps, "className">> = ({
+const SvgTextLines = ({ text }: { text: string }) => (
+  <>
+    {text.split("\n").map((line, index) => (
+      <text
+        key={`${line}-${index}`}
+        x="50%"
+        y={`${(index + 1) * 0.78}em`}
+        textAnchor="middle"
+        fill="currentColor"
+      >
+        {line}
+      </text>
+    ))}
+  </>
+)
+
+const SvgMorph: React.FC<MorphingTextProps> = ({
   texts,
+  className,
   entrance = 0,
   hold = 0,
   loop = true,
   onComplete,
 }) => {
-  const { text1Ref, text2Ref } = useMorphingText(texts, {
+  const reactId = useId().replace(/:/g, "")
+  const thresholdId = `morph-threshold-${reactId}`
+  const blur1Id = `morph-blur-a-${reactId}`
+  const blur2Id = `morph-blur-b-${reactId}`
+  const { text1Ref, text2Ref, blur1Ref, blur2Ref } = useMorphingText(texts, {
     entrance,
     hold,
     loop,
     onComplete,
   })
+
   return (
-    <>
-      <span
-        className="absolute inset-x-0 top-0 m-auto inline-block w-full"
-        ref={text1Ref}
-        style={{ filter: "blur(100px)", opacity: 0 }}
-      >
-        {texts[0]}
-      </span>
-      <span
-        className="absolute inset-x-0 top-0 m-auto inline-block w-full"
-        ref={text2Ref}
-        style={{ filter: "none", opacity: 0 }}
-      >
-        {texts[1 % texts.length]}
-      </span>
-    </>
+    <svg
+      className={clsx("relative mx-auto w-full overflow-visible text-center", className)}
+      aria-hidden="true"
+      focusable="false"
+    >
+      <defs>
+        <filter
+          id={blur1Id}
+          x="-200%"
+          y="-200%"
+          width="500%"
+          height="500%"
+          colorInterpolationFilters="sRGB"
+        >
+          <feGaussianBlur ref={blur1Ref} stdDeviation={maxBlur} />
+        </filter>
+        <filter
+          id={blur2Id}
+          x="-200%"
+          y="-200%"
+          width="500%"
+          height="500%"
+          colorInterpolationFilters="sRGB"
+        >
+          <feGaussianBlur ref={blur2Ref} stdDeviation={0} />
+        </filter>
+        <filter
+          id={thresholdId}
+          x="-100%"
+          y="-100%"
+          width="300%"
+          height="300%"
+          colorInterpolationFilters="sRGB"
+        >
+          <feColorMatrix
+            in="SourceGraphic"
+            type="matrix"
+            values="1 0 0 0 0
+                    0 1 0 0 0
+                    0 0 1 0 0
+                    0 0 0 255 -140"
+          />
+        </filter>
+      </defs>
+      <g filter={`url(#${thresholdId})`}>
+        <g
+          ref={text1Ref}
+          data-text={texts[0]}
+          filter={`url(#${blur1Id})`}
+          opacity={0}
+        >
+          <SvgTextLines text={texts[0]} />
+        </g>
+        <g
+          ref={text2Ref}
+          data-text={texts[1 % texts.length]}
+          filter={`url(#${blur2Id})`}
+          opacity={0}
+        >
+          <SvgTextLines text={texts[1 % texts.length]} />
+        </g>
+      </g>
+    </svg>
   )
 }
 
-const SvgFilters: React.FC = () => (
-  <svg
-    id="filters"
-    className="fixed h-0 w-0"
-    preserveAspectRatio="xMidYMid slice"
-  >
-    <defs>
-      <filter id="threshold" colorInterpolationFilters="sRGB">
-        <feColorMatrix
-          in="SourceGraphic"
-          type="matrix"
-          values="1 0 0 0 0
-                  0 1 0 0 0
-                  0 0 1 0 0
-                  0 0 0 255 -140"
-        />
-      </filter>
-    </defs>
-  </svg>
-)
-
-// Only structural classes here: the threshold filter and the relative box the two
-// overlapping spans position against. Typography is left to the caller so this
-// composes with the CSS modules the rest of the site uses.
+// All blur and threshold primitives live inside the same SVG as the text they
+// affect. Mobile WebKit can drop a CSS url(#filter) attached to an HTML box,
+// leaving only an opacity fade; SVG filter attributes keep the liquid threshold
+// path intact across desktop and phone browsers.
 export const MorphingText: React.FC<MorphingTextProps> = ({
   texts,
   className,
@@ -260,26 +337,12 @@ export const MorphingText: React.FC<MorphingTextProps> = ({
   loop,
   onComplete,
 }) => (
-  <>
-    {/* Keep the definition outside the filtered element. Mobile WebKit can
-        fail a fragment filter when its SVG lives inside the element consuming
-        it; rendering it first as a sibling preserves the desktop threshold
-        effect on mobile instead of falling back to a different animation. */}
-    <SvgFilters />
-    <div
-      className={clsx(
-        "relative mx-auto w-full text-center leading-none",
-        className
-      )}
-      style={{ filter: thresholdFilter, WebkitFilter: thresholdFilter }}
-    >
-      <Texts
-        texts={texts}
-        entrance={entrance}
-        hold={hold}
-        loop={loop}
-        onComplete={onComplete}
-      />
-    </div>
-  </>
+  <SvgMorph
+    texts={texts}
+    className={className}
+    entrance={entrance}
+    hold={hold}
+    loop={loop}
+    onComplete={onComplete}
+  />
 )
