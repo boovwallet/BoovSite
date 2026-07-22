@@ -1,7 +1,7 @@
 .section {
   position: relative;
-  height: 170svh;
-  min-height: 1080px;
+  height: 225svh;
+  min-height: 1420px;
   color: var(--ink-warm, #efeaf7);
 }
 
@@ -423,7 +423,7 @@
 
 @media (max-width: 760px) {
   .section {
-    height: 210svh;
+    height: 215svh;
     min-height: 1500px;
   }
 
@@ -478,7 +478,12 @@
   }
 
   .signalLine p {
-    font-size: 0.58rem;
+    font-size: 0.64rem;
+  }
+
+  .progress {
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
   }
 
   .phonePreview {

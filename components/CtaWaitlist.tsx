@@ -112,7 +112,7 @@ export function CtaWaitlist() {
   };
 
   // No backend yet: client-side validation + local success state only.
-  // TODO: wire to a real waitlist endpoint before launch.
+  // TODO: wire to a real updates endpoint before launch.
   const onSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (!EMAIL_PATTERN.test(email.trim())) {
@@ -130,7 +130,7 @@ export function CtaWaitlist() {
       id="join"
       ref={sectionRef}
       className={styles.section}
-      aria-label="Join the waitlist"
+      aria-label="Get Boov launch updates"
       data-active={sectionActive || undefined}
       data-celebrating={submitted || undefined}
     >
@@ -226,7 +226,7 @@ export function CtaWaitlist() {
                           <strong>{CTA_COPY.successHeadline}</strong>
                           <p>{CTA_COPY.success}</p>
                         </div>
-                        <span className={styles.launchStatus}>BOOV LAUNCH LIST · EARLY SUPPORTER</span>
+                        <span className={styles.launchStatus}>BOOV UPDATES · EARLY SUPPORTER</span>
                       </motion.div>
                     ) : (
                       <motion.form
@@ -238,12 +238,12 @@ export function CtaWaitlist() {
                         animate={{ opacity: formAvailable ? 1 : 0 }}
                         transition={{ duration: prefersReducedMotion ? 0 : 0.34 }}
                       >
-                        <label htmlFor="waitlist-email" className={styles.label}>
+                        <label htmlFor="updates-email" className={styles.label}>
                           {CTA_COPY.fieldLabel}
                         </label>
                         <div ref={fieldRef} className={`${styles.field} ${error ? styles.fieldError : ""}`}>
                           <input
-                            id="waitlist-email"
+                            id="updates-email"
                             type="email"
                             inputMode="email"
                             autoComplete="email"
@@ -257,7 +257,7 @@ export function CtaWaitlist() {
                               if (error) setError(false);
                             }}
                             aria-invalid={error}
-                            aria-describedby={error ? "waitlist-error" : "waitlist-helper"}
+                            aria-describedby={error ? "updates-email-error" : undefined}
                           />
                           {/* Boov is the submit control: once the handed-off
                               card settles ("ready"), he crawls across the field
@@ -270,10 +270,10 @@ export function CtaWaitlist() {
                             size={52}
                           />
                         </div>
-                        <AnimatePresence initial={false} mode="wait">
+                        <AnimatePresence initial={false}>
                           {error ? (
                             <motion.p
-                              id="waitlist-error"
+                              id="updates-email-error"
                               key="error"
                               className={styles.errorText}
                               role="alert"
@@ -283,11 +283,7 @@ export function CtaWaitlist() {
                             >
                               Enter a valid email address.
                             </motion.p>
-                          ) : (
-                            <motion.p id="waitlist-helper" key="helper" className={styles.helper}>
-                              {CTA_COPY.helper}
-                            </motion.p>
-                          )}
+                          ) : null}
                         </AnimatePresence>
                       </motion.form>
                     )}

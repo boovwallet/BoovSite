@@ -11,7 +11,7 @@ import styles from "./BoovReserve.module.css";
  * The release form's submit control, played by Boov himself. Once armed he
  * crawls in from the left ("touch me!" while crawling), stands up on the
  * submit slot when he arrives ("click me!"), and clicking him submits. A real
- * <button type="submit"> the whole time - the pill caption "Reserve spot" is
+ * <button type="submit"> the whole time - the pill caption "Stay updated" is
  * the accessible name, so keyboard, AT, validation and the success flow are
  * exactly what a plain button would give.
  *
@@ -118,9 +118,9 @@ export function BoovReserve({
       onMouseLeave={() => setHovered(false)}
       disabled={disabled}
       data-cursor
-      data-cursor-label="Reserve"
+      data-cursor-label="Updates"
     >
-      Reserve spot
+      Stay updated
       <span
         ref={riderRef}
         className={`${styles.rider} ${visible ? styles.riderVisible : ""}`}

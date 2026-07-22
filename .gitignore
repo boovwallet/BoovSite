@@ -8,3 +8,4 @@ tsconfig.tsbuildinfo
 coverage
 dist
 public/assets/*.mov
+.env*

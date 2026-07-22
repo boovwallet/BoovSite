@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef } from "react"
 
 import { clsx } from "clsx"
 
-const morphTime = 1.5
+const morphTime = 0.75
 const cooldownTime = 0.5
 const thresholdFilter = 'url("#threshold") blur(0.6px)'
 // A suspended tab or a busy mobile main thread can hand requestAnimationFrame
