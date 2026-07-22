@@ -63,19 +63,34 @@ export function CtaWaitlist() {
     return () => mobileQuery.removeEventListener("change", updateMobileState);
   }, []);
 
-  const { scrollYProgress } = useScroll({
+  const { scrollYProgress: desktopScrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"],
   });
-  const cardX = useTransform(scrollYProgress, [0, 0.18, 0.42, 1], [-150, -150, 0, 0]);
+  const { scrollYProgress: mobileScrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end end"],
+  });
+  const scrollYProgress = isMobile ? mobileScrollYProgress : desktopScrollYProgress;
+  const cardTravelRange = isMobile ? [0.08, 0.28, 1] : [0, 0.18, 0.42, 1];
+  const cardX = useTransform(
+    scrollYProgress,
+    cardTravelRange,
+    isMobile ? [-150, 0, 0] : [-150, -150, 0, 0],
+  );
   const cardY = useTransform(
     scrollYProgress,
-    [0, 0.18, 0.42, 1],
-    isMobile ? [30, 30, 8, 8] : [30, 30, -28, -28],
+    cardTravelRange,
+    isMobile ? [30, 8, 8] : [30, 30, -28, -28],
   );
-  const cardScale = useTransform(scrollYProgress, [0, 0.18, 0.42, 1], [0.7, 0.7, 1, 1]);
-  const flipStart = isMobile ? 0.38 : 0.42;
-  const flipEnd = isMobile ? 0.64 : 0.72;
+  const cardScale = useTransform(
+    scrollYProgress,
+    cardTravelRange,
+    isMobile ? [0.7, 1, 1] : [0.7, 0.7, 1, 1],
+  );
+  const handoffStart = isMobile ? 0.08 : 0.18;
+  const flipStart = isMobile ? 0.28 : 0.42;
+  const flipEnd = isMobile ? 0.42 : 0.72;
   const cardRotateY = useTransform(
     scrollYProgress,
     [0, flipStart, flipEnd, 1],
@@ -88,7 +103,7 @@ export function CtaWaitlist() {
       return;
     }
 
-    const nextPhase: HandoffPhase = progress < 0.18
+    const nextPhase: HandoffPhase = progress < handoffStart
       ? "approach"
       : progress < flipEnd
         ? "handoff"
