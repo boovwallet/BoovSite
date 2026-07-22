@@ -62,6 +62,14 @@ export const metadata: Metadata = {
 // before first paint so returning visitors do not see a theme flash.
 const themeScript = `try{document.documentElement.classList.toggle("dark",localStorage.getItem("theme")!=="light")}catch(e){document.documentElement.classList.add("dark")}`;
 
+// Kill the browser's scroll restoration before it can fire. It runs before
+// hydration, so switching it to "manual" from a useEffect (in ScrollReset) was
+// always too late: a reload part-way down would restore that position, Lenis
+// would initialise there, and the page would open on the card scene instead of
+// the morph. Setting it here — and starting at the top unless an explicit hash
+// asks otherwise — makes the intro deterministic.
+const scrollScript = `try{history.scrollRestoration="manual";if(!location.hash)window.scrollTo(0,0);}catch(e){}`;
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ViewTransitions>
@@ -71,6 +79,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         className={`${sniglet.variable} ${poppins.variable} ${spaceGrotesk.variable} dark`}
       >
         <head>
+          <script dangerouslySetInnerHTML={{ __html: scrollScript }} />
           <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         </head>
         <body>
