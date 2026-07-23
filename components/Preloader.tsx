@@ -5,6 +5,7 @@ import { useReducedMotion } from "framer-motion";
 import { useRef, useState } from "react";
 import { gsap } from "@/lib/gsap";
 import { BoovCharacter } from "./boov/BoovCharacter";
+import InteractiveGrid from "./ui/interactive-grid";
 import styles from "./Preloader.module.css";
 
 /**
@@ -68,11 +69,28 @@ export function Preloader() {
   return (
     <div ref={rootRef} className={styles.root} data-preloader aria-hidden="true">
       <div className={styles.center}>
-        <div className={styles.word}>
-          {"boov".split("").map((c, i) => (
-            <span key={i}>{c}</span>
-          ))}
-        </div>
+        <InteractiveGrid
+          className={styles.wordInteractive}
+          text="boov"
+          dotSize={6}
+          gap={9}
+          baseColor="#ffffff"
+          activeColor="#b8a7e8"
+          proximity={120}
+          shockRadius={190}
+          shockStrength={6}
+          localizedReveal
+          revealRadius={27}
+          revealFeather={2}
+          active={!prefersReducedMotion}
+          reducedMotion={Boolean(prefersReducedMotion)}
+        >
+          <div className={styles.word}>
+            {"boov".split("").map((c, i) => (
+              <span key={i}>{c}</span>
+            ))}
+          </div>
+        </InteractiveGrid>
       </div>
       <div className={styles.meta}>
         <span className={styles.counter}>
