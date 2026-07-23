@@ -94,11 +94,20 @@
 }
 
 .heroWord {
+  position: relative;
   display: block;
   width: 100%;
   margin: 0;
   transform-style: preserve-3d;
   will-change: transform;
+}
+
+.heroInteractiveWord {
+  position: relative;
+  width: 100%;
+  font-family: var(--font-sniglet), system-ui, sans-serif;
+  font-size: 20rem;
+  font-weight: 800;
 }
 
 .heroMorph {
@@ -708,6 +717,10 @@
     font-size: 13rem;
   }
 
+  .heroInteractiveWord {
+    font-size: 13rem;
+  }
+
   .stageTitle h2 {
     font-size: 6rem;
   }
@@ -719,6 +732,10 @@
   }
 
   .heroMorphSettled {
+    font-size: 7.5rem;
+  }
+
+  .heroInteractiveWord {
     font-size: 7.5rem;
   }
 
@@ -859,6 +876,10 @@
 
 @media (max-width: 390px) {
   .heroMorphSettled {
+    font-size: 5.8rem;
+  }
+
+  .heroInteractiveWord {
     font-size: 5.8rem;
   }
 

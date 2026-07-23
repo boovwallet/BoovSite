@@ -8,6 +8,7 @@ import { FLOW_STEPS } from "@/content/homepage";
 import { gsap } from "@/lib/gsap";
 import { useLenis } from "@/lib/SmoothScroll";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
+import InteractiveGrid from "@/components/ui/interactive-grid";
 import styles from "./BoovExperience.module.css";
 
 const EDGE_LAYERS = Array.from({ length: 17 }, (_, index) => index - 8);
@@ -255,6 +256,9 @@ function HeroIntro({ prefersReducedMotion }: { prefersReducedMotion: boolean }) 
   const [introReady, setIntroReady] = useState(prefersReducedMotion);
   const [wordmarkSettled, setWordmarkSettled] = useState(prefersReducedMotion);
   const [introComplete, setIntroComplete] = useState(prefersReducedMotion);
+  const [interactiveWord, setInteractiveWord] = useState(
+    prefersReducedMotion ? "BOOV" : HERO_WORDS[0],
+  );
 
   // The cue's job: hand the locked intro over to the story.
   const jumpToCard = () => {
@@ -406,18 +410,36 @@ function HeroIntro({ prefersReducedMotion }: { prefersReducedMotion: boolean }) 
         Tap To Change. BOOV - The first-ever technology built for the unhoused
       </h1>
       <div ref={wordRef} className={styles.heroWord} aria-hidden="true">
-        {prefersReducedMotion ? (
-          <span className={`${styles.heroMorph} ${styles.heroMorphSettled}`}>BOOV</span>
-        ) : introReady ? (
-          <MorphingText
-            texts={HERO_WORDS}
-            entrance={HERO_ENTRANCE_SECONDS}
-            hold={HERO_HOLD_SECONDS}
-            loop={false}
-            onComplete={() => setWordmarkSettled(true)}
-            className={`${styles.heroMorph} ${wordmarkSettled ? styles.heroMorphSettled : ""}`}
-          />
-        ) : null}
+        <InteractiveGrid
+          className={styles.heroInteractiveWord}
+          text={interactiveWord}
+          dotSize={7}
+          gap={10}
+          baseColor="#b8a7e8"
+          activeColor="#fff8f2"
+          proximity={132}
+          shockRadius={220}
+          shockStrength={7}
+          localizedReveal
+          revealRadius={27}
+          revealFeather={2}
+          active={introReady && !prefersReducedMotion}
+          reducedMotion={Boolean(prefersReducedMotion)}
+        >
+          {prefersReducedMotion ? (
+            <span className={`${styles.heroMorph} ${styles.heroMorphSettled}`}>BOOV</span>
+          ) : introReady ? (
+            <MorphingText
+              texts={HERO_WORDS}
+              entrance={HERO_ENTRANCE_SECONDS}
+              hold={HERO_HOLD_SECONDS}
+              loop={false}
+              onComplete={() => setWordmarkSettled(true)}
+              onActiveTextChange={setInteractiveWord}
+              className={`${styles.heroMorph} ${wordmarkSettled ? styles.heroMorphSettled : ""}`}
+            />
+          ) : null}
+        </InteractiveGrid>
       </div>
       <p className={styles.heroTagline}>THE FIRST-EVER TECHNOLOGY BUILT FOR THE UNHOUSED</p>
       <div className={`${styles.heroCue} ${introComplete ? styles.heroCueReady : ""}`}>
