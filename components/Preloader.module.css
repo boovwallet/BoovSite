@@ -16,14 +16,19 @@
   place-items: center;
 }
 
-.word {
-  display: flex;
-  overflow: hidden;
-  color: #fff;
+.wordInteractive {
+  width: max-content;
   font-family: var(--font-sniglet), system-ui, sans-serif;
   font-size: clamp(4rem, 14vw, 12rem);
   font-weight: 800;
   line-height: 1;
+}
+
+.word {
+  display: flex;
+  overflow: hidden;
+  color: #fff;
+  font: inherit;
 }
 
 .word span {
