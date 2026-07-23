@@ -40,7 +40,7 @@ type Transaction = {
   category: string;
   rule: string;
   status: "approved" | "declined";
-  decision: "ACCEPTED" | "DECLINED" | "NO";
+  decision: "ACCEPTED" | "DECLINED";
   speech: string;
   Icon: LucideIcon;
 };
@@ -112,7 +112,7 @@ const TRANSACTIONS: Transaction[] = [
     category: "Cash access",
     rule: "Cash withdrawal is unavailable",
     status: "declined",
-    decision: "NO",
+    decision: "DECLINED",
     speech: "Cash withdrawals stay locked.",
     Icon: Banknote,
   },
@@ -462,7 +462,7 @@ export function SpendingControls() {
   };
 
   const finalStatus = transaction.id === "cash"
-    ? "NO · Cash withdrawal is unavailable."
+    ? "DECLINED · Cash withdrawal is unavailable."
     : transaction.status === "approved"
       ? `ACCEPTED · ${transaction.amount} at ${transaction.merchant}.`
       : "DECLINED · Alcohol is a blocked category.";
@@ -526,23 +526,6 @@ export function SpendingControls() {
           </header>
 
           <div className={styles.visual}>
-            <AnimatePresence mode="wait">
-              {guidedDecisionVisible ? (
-                <motion.div
-                  key={`${transaction.id}-${transaction.decision}-${replayCount}`}
-                  className={styles.decisionFlash}
-                  data-status={transaction.status}
-                  initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.72, filter: "blur(12px)" }}
-                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                  exit={prefersReducedMotion ? undefined : { opacity: 0, scale: 1.08, filter: "blur(8px)" }}
-                  transition={{ duration: prefersReducedMotion ? 0 : 0.34, ease: [0.22, 1, 0.36, 1] }}
-                  aria-hidden="true"
-                >
-                  {transaction.decision}
-                </motion.div>
-              ) : null}
-            </AnimatePresence>
-
             <motion.div
               className={styles.terminal}
               animate={{ opacity: 1, scale: visibleStep === 0 ? 0.94 : 1 }}
@@ -562,6 +545,22 @@ export function SpendingControls() {
             ><i /></motion.span>
 
             <motion.div className={styles.cardInteraction} animate={burstControls}>
+              <AnimatePresence mode="wait">
+                {guidedDecisionVisible ? (
+                  <motion.div
+                    key={`${transaction.id}-${transaction.decision}-${replayCount}`}
+                    className={styles.decisionFlash}
+                    data-status={transaction.status}
+                    initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.72, filter: "blur(12px)" }}
+                    animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                    exit={prefersReducedMotion ? undefined : { opacity: 0, scale: 1.08, filter: "blur(8px)" }}
+                    transition={{ duration: prefersReducedMotion ? 0 : 0.34, ease: [0.22, 1, 0.36, 1] }}
+                    aria-hidden="true"
+                  >
+                    {transaction.decision}
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
               <MemberCard
                 activeStep={visibleStep}
                 reducedMotion={prefersReducedMotion}
