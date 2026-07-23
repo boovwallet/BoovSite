@@ -30,6 +30,7 @@ interface MorphingTextOptions {
   /** When false, the sequence settles on the last text instead of cycling. */
   loop: boolean
   onComplete?: () => void
+  onActiveTextChange?: (text: string) => void
 }
 
 const blurForFraction = (fraction: number) =>
@@ -78,7 +79,7 @@ const setLayerState = (
 
 const useMorphingText = (
   texts: string[],
-  { entrance, hold, loop, onComplete }: MorphingTextOptions
+  { entrance, hold, loop, onComplete, onActiveTextChange }: MorphingTextOptions
 ) => {
   const textIndexRef = useRef(0)
   const morphRef = useRef(0)
@@ -86,6 +87,7 @@ const useMorphingText = (
   const entranceRef = useRef(entrance)
   const holdRef = useRef(hold)
   const doneRef = useRef(false)
+  const activeTextRef = useRef<string | null>(null)
   const timeRef = useRef(0)
 
   const text1Ref = useRef<SVGGElement>(null)
@@ -106,9 +108,19 @@ const useMorphingText = (
   }, [])
 
   const onCompleteRef = useRef(onComplete)
+  const onActiveTextChangeRef = useRef(onActiveTextChange)
   useEffect(() => {
     onCompleteRef.current = onComplete
   }, [onComplete])
+  useEffect(() => {
+    onActiveTextChangeRef.current = onActiveTextChange
+  }, [onActiveTextChange])
+
+  const reportActiveText = useCallback((text: string) => {
+    if (activeTextRef.current === text) return
+    activeTextRef.current = text
+    onActiveTextChangeRef.current?.(text)
+  }, [])
 
   const setStyles = useCallback(
     (fraction: number) => {
@@ -128,8 +140,13 @@ const useMorphingText = (
         blurForFraction(fraction),
         Math.pow(fraction, 0.4),
       )
+      reportActiveText(
+        fraction < 0.5
+          ? texts[textIndexRef.current % texts.length]
+          : texts[(textIndexRef.current + 1) % texts.length]
+      )
     },
-    [setThresholdActive, texts]
+    [reportActiveText, setThresholdActive, texts]
   )
 
   /** Resolve the first text out of blur on the same curve the morph uses, so
@@ -151,8 +168,9 @@ const useMorphingText = (
         0,
         0,
       )
+      reportActiveText(texts[0])
     },
-    [setThresholdActive, texts]
+    [reportActiveText, setThresholdActive, texts]
   )
 
   /** Pin a single text at full opacity with no blur - used for the opening
@@ -161,7 +179,8 @@ const useMorphingText = (
     setThresholdActive(false)
     setLayerState(text1Ref.current, blur1Ref.current, text, 0, 0)
     setLayerState(text2Ref.current, blur2Ref.current, text, 0, 1)
-  }, [setThresholdActive])
+    reportActiveText(text)
+  }, [reportActiveText, setThresholdActive])
 
   const doMorph = useCallback(() => {
     morphRef.current -= cooldownRef.current
@@ -256,6 +275,7 @@ interface MorphingTextProps {
   /** Set false to stop on the last text rather than cycling. Defaults to true. */
   loop?: boolean
   onComplete?: () => void
+  onActiveTextChange?: (text: string) => void
 }
 
 const SvgTextLines = ({ text }: { text: string }) => (
@@ -281,6 +301,7 @@ const SvgMorph: React.FC<MorphingTextProps> = ({
   hold = 0,
   loop = true,
   onComplete,
+  onActiveTextChange,
 }) => {
   const reactId = useId().replace(/:/g, "")
   const thresholdId = `morph-threshold-${reactId}`
@@ -291,6 +312,7 @@ const SvgMorph: React.FC<MorphingTextProps> = ({
     hold,
     loop,
     onComplete,
+    onActiveTextChange,
   })
 
   return (
@@ -377,6 +399,7 @@ export const MorphingText: React.FC<MorphingTextProps> = ({
   hold,
   loop,
   onComplete,
+  onActiveTextChange,
 }) => (
   <SvgMorph
     texts={texts}
@@ -385,5 +408,6 @@ export const MorphingText: React.FC<MorphingTextProps> = ({
     hold={hold}
     loop={loop}
     onComplete={onComplete}
+    onActiveTextChange={onActiveTextChange}
   />
 )
