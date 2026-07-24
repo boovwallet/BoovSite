@@ -9,3 +9,4 @@ coverage
 dist
 public/assets/*.mov
 .env*
+!.env.example
