@@ -6,6 +6,14 @@ const nextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: "/.well-known/apple-app-site-association",
+        destination: "/aasa",
+      },
+    ];
+  },
 };
 
 export default nextConfig;
